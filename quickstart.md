@@ -67,8 +67,6 @@ for the geometry in the geojson supplied in the request’s body. If successful,
 
 The test file, `postcode_2830_g0.geojson` is available in this repository.
 
-Important: the coordinate reference system of the geojson must conform to the standard. That is, a geographic coordinate reference system using the World Geodetic System 1984 (WGS 84) datum, with longitude and latitude in decimal degrees. 
-
 
 ```bash
 # Read the text from a geojson file. 

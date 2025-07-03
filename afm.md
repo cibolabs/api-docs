@@ -41,6 +41,11 @@ curl -s -X POST \
 In this example, the geojson is supplied in the request's body.
 The geojson contains a single Feature.
 
+Important: the coordinate reference system of the geojson must conform to 
+the standard. That is, a geographic coordinate reference system using the 
+World Geodetic System 1984 (WGS 84) datum, with longitude and latitude in
+decimal degrees.
+
 **Request**
 
 ```bash
