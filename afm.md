@@ -18,10 +18,10 @@ to send requests to the API. They assume:
 
 **Request**
 
-https://data.afm.cibolabs.com/getimagedates 
+GET https://data.afm.cibolabs.com/getimagedates 
 
 ```bash
-curl -s -X POST \ 
+curl -s -X GET \ 
     --output data.json \ 
     -H "Content-Type: application/json" \ 
     -H "Authorization: Bearer ${TOKEN}" \ 
@@ -32,7 +32,7 @@ curl -s -X POST \
 
 ```json
 { 
-    dates: ["20170105", "20170110", ...] 
+  "dates": ["20170105", "20170110", ...] 
 }
 ```
 
@@ -47,6 +47,8 @@ World Geodetic System 1984 (WGS 84) datum, with longitude and latitude in
 decimal degrees.
 
 **Request**
+
+POST https://data.afm.cibolabs.com/gettsdmstats?startdate=20240101&enddate=20251231&percentiles=5,95
 
 ```bash
 geojson_file="your_area_of_interest.geojson" 
@@ -70,7 +72,7 @@ curl -s -X POST \
 { 
   "type": "Feature", 
   "properties": { 
-    "name": "feature_a, 
+    "name": "feature_a", 
   }, 
   "geometry": { 
     "type": "Polygon", 
@@ -94,34 +96,35 @@ Notes:
  
 ```json
 { 
-      "type": "Feature", 
-      "properties": { 
-        "name": "feature_a", 
-        "stats": [ 
-          { 
-            "measure": "tsdm", 
-            "unit": "kg/ha", 
-            "dates": ["20250101", "20250106", ...], 
-            "captured": [100, 100, ...], 
-            "median": [2612, 2631, ...], 
-            "mean": [2453, 2489, ...], 
-            "std": [876, 891, ...], 
-            "p5": [301, 312, ...], 
-            "p10": [354, 362, ...], 
-            "p25": [1987, 1999, ...], 
-            "p75": [3001, 3053, ...], 
-            "p90": [3122, 3150, ...], 
-            "p95": [3182, 3198, ...], 
-            "area": 765.90 
-          }  
-        ] 
-      }, 
-      "geometry": { 
-        "type": "Polygon", 
-        "coordinates": [ 
-        ... 
-       ] 
-    } 
+  "type": "Feature", 
+  "properties": { 
+    "name": "feature_a", 
+    "stats": [ 
+      { 
+        "measure": "tsdm", 
+        "unit": "kg/ha", 
+        "dates": ["20250101", "20250106", ...], 
+        "captured": [100, 100, ...], 
+        "median": [2612, 2631, ...], 
+        "mean": [2453, 2489, ...], 
+        "std": [876, 891, ...], 
+        "p5": [301, 312, ...], 
+        "p10": [354, 362, ...], 
+        "p25": [1987, 1999, ...], 
+        "p75": [3001, 3053, ...], 
+        "p90": [3122, 3150, ...], 
+        "p95": [3182, 3198, ...], 
+        "area": 765.90 
+      }  
+    ] 
+  }, 
+  "geometry": { 
+    "type": "Polygon", 
+    "coordinates": [ 
+      ... 
+    ] 
+  }
+} 
 ```
 
 ### /gettsdmstats with a FeatureCollection
@@ -134,7 +137,22 @@ If you want statistics for single feature, you must call the API multiple times,
 
 **Request**
 
-https://data.afm.cibolabs.com/gettsdmstats?enddate=20250430&startdate=20250101&percentiles=5,95&aggregate=true 
+POST https://data.afm.cibolabs.com/gettsdmstats?enddate=20250430&startdate=20250101&percentiles=5,95
+
+```bash
+geojson_file="your_area_of_interest.geojson"
+geojson=$(cat "$geojson_file")
+startdate="20250101"
+enddate="20250430"
+percentiles="5,95"
+
+curl -s -X POST \ 
+    --output data.json \ 
+    -H "Content-Type: application/json" \ 
+    -H "Authorization: Bearer ${TOKEN}" \ 
+    -d "$geojson" \ 
+    "https://data.afm.cibolabs.com/gettsdmstats?startdate=$startdate&enddate=$enddate&percentiles=$percentiles" 
+```
 
 
 **Body** 
@@ -151,7 +169,7 @@ https://data.afm.cibolabs.com/gettsdmstats?enddate=20250430&startdate=20250101&p
       "geometry": { 
         "type": "Polygon", 
         "coordinates": [ 
-        ... 
+        ...
        ] 
     }, 
     { 
@@ -162,10 +180,10 @@ https://data.afm.cibolabs.com/gettsdmstats?enddate=20250430&startdate=20250101&p
       "geometry": { 
         "type": "Polygon", 
         "coordinates": [ 
-        ... 
+        ...
        ] 
     } 
-  ] 
+  ]
 } 
 ```
 
@@ -215,34 +233,34 @@ Notes:
        ] 
     }, 
     "type": "Feature", 
-      "properties": { 
-        "name": "feature_b", 
-        "aggregate": "yes" 
-        "stats": [ 
-          { 
-            "measure": "tsdm", 
-            "unit": "kg/ha", 
-            "dates": ["20250101", "20250106", ...], 
-            "captured": [100, 98, ...], 
-            "median": [2612, 2631, ...], 
-            "mean": [2453, 2489, ...], 
-            "std": [876, 891, ...], 
-            "p5": [301, 312, ...], 
-            "p10": [354, 362, ...], 
-            "p25": [1987, 1999, ...], 
-            "p75": [3001, 3053, ...], 
-            "p90": [3122, 3150, ...], 
-            "p95": [3182, 3198, ...], 
-            "area": 3832.76 
-          }  
-        ] 
-      }, 
-      "geometry": { 
-        "type": "MultiPolygon", 
-        "coordinates": [ 
-          ... 
-       ] 
+    "properties": { 
+      "name": "feature_b", 
+      "aggregate": "yes" 
+      "stats": [ 
+        { 
+          "measure": "tsdm", 
+          "unit": "kg/ha", 
+          "dates": ["20250101", "20250106", ...], 
+          "captured": [100, 98, ...], 
+          "median": [2612, 2631, ...], 
+          "mean": [2453, 2489, ...], 
+          "std": [876, 891, ...], 
+          "p5": [301, 312, ...], 
+          "p10": [354, 362, ...], 
+          "p25": [1987, 1999, ...], 
+          "p75": [3001, 3053, ...], 
+          "p90": [3122, 3150, ...], 
+          "p95": [3182, 3198, ...], 
+          "area": 3832.76 
+        }  
+      ] 
+    }, 
+    "geometry": { 
+      "type": "MultiPolygon", 
+      "coordinates": [ 
+        ... 
+      ] 
     } 
-  ] 
+  ]
 }
 ```

@@ -58,5 +58,3 @@ A typical workflow is:
 - Use our login end point to exchange your credentials for an access token
 - Pass the access token in the `Authorization` header of your http requests to
   our APIs' endpoints
-
-
