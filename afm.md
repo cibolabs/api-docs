@@ -476,10 +476,10 @@ If you wish, you may chain the requests with different start and end dates.
 A new stats object for the second request is appended to the stats
 list of the Feature's properties.
 
-For example. Your first request to `/gettsdmstats` is for the year 2024
-(`startdate=20240101&enddate=20241231`). The response is changed with a 
-second request to `gettdsmstats` for the year 2025
-(`startdate=20250101&enddate=20251231`). The output contains two stats objects
+For example. Your first request to `/gettsdmstats` is for the year 2023
+(`startdate=20230101&enddate=20231231`). The response is chained with a 
+second request to `gettdsmstats` for the year 2024
+(`startdate=20240101&enddate=20241231`). The output contains two stats objects
 in the stats list, one for each year.
 
 ```json
