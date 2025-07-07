@@ -264,3 +264,268 @@ Notes:
   ]
 }
 ```
+
+
+## Chaining
+
+You can chain multiple calls to the AFM API endpoints together, in sequence.
+When chaining, pass the returned geojson from one request
+as the body of the next request.
+Statistics are appended to the geojson's Feature on each call.
+
+
+### Chaining example
+
+In this example we chain three calls together:
+
+- /getpointtsdmstats
+- /getfcstats
+- /getrain
+
+/getpointtsdmstats takes a point location (latitude and longitude) and a buffer
+radius, in metres, around the point. It returns a geojson with statistics for
+the pasture biomass for the area within the circle.
+
+The next call, to /getfcstats, uses the returned geojson in the
+request body. The fractional cover statistics are appended to the feature's
+list of stats.
+
+Similarly, the call to /getrain uses the geojson returned from the previous
+request appends the rainfall statistics to the feature's stats.
+
+Summary of requests:
+
+```
+POST https://data.afm.cibolabs.com/getpointtsdmstats?lat=-23.52&lon=148.16&buffer=5000&startdate=20240101&enddate=20241231&percentiles=10,25,50,75,90
+
+POST https://data.afm.cibolabs.com/getfcstats?startdate=20240101&enddate=20241231&percentiles=10,25,50,75,90
+
+POST https://data.afm.cibolabs.com/getrain?startdate=20240101&enddate=20241231
+```
+
+In detail:
+
+```
+startdate="20240101"
+enddate="20241231"
+lat="-23.52"
+lon="148.16"
+buffer="5000"
+percentiles="10,25,50,75,90"
+
+# First call to /getpointtsdmstats
+curl -s -X POST \
+    --output output_1.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.afm.cibolabs.com/getpointtsdmstats?lat=$lat&lon=$lon&buffer=$buffer&startdate=$startdate&enddate=$enddate&percentiles=$percentiles"
+
+
+# The second call, to /getfcstats, uses the geojson returned from the first call
+geojson=$(cat output_1.json)
+curl -s -X POST \
+    --output output_2.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$geojson" \
+    "https://data.afm.cibolabs.com/getfcstats?startdate=$startdate&enddate=$enddate&percentiles=$percentiles"
+
+# The third call, to /getrain, uses the geojson returned from the second call
+geojson=$(cat output_2.json)
+curl -s -X POST \
+    --output output_3.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$geojson" \
+    "https://data.afm.cibolabs.com/getrain?startdate=$startdate&enddate=$enddate"
+```
+
+The final output, in `output_3.json` has a list of stats objects, one for
+each measure (tsdm, fcbare, fcgreen, fcdead, rain):
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "centre_lat": -23.52,
+        "centre_lon": 148.16,
+        "buffer": 5000.0,
+        "aggregate": "yes",
+        "stats": [
+          {
+            "unit": "kg/ha",
+            "measure": "tsdm",
+            "area": 7850.393436441231,
+            "dates": [
+              "20240104",
+              "20240109",
+              "20240114",
+              ...
+            ],
+            "captured": [
+              99.0151017728168,
+              99.21208141825345,
+              98.91661195009848,
+              ...
+            ],
+            "mean": [
+              2092.376967688484,
+              2213.5574855252275,
+              2286.963915387806,
+              ...
+            ],
+            ...
+          },
+          {
+            "unit": "%",
+            "measure": "fcbare",
+            "area": 7850.393436441231,
+            "dates": [
+              "20240104",
+              "20240109",
+              "20240114",
+              ...
+            ],
+            ...
+          },
+          {
+            "unit": "%",
+            "measure": "fcgreen",
+            "area": 7850.393436441231,
+            "dates": [
+              "20240104",
+              "20240109",
+              "20240114",
+              ...
+            ],
+            ...
+          },
+          {
+            "unit": "%",
+            "measure": "fcdead",
+            "area": 7850.393436441231,
+            "dates": [
+              "20240104",
+              "20240109",
+              "20240114",
+              ...
+            ],
+            ...
+          },
+          {
+            "unit": "mm",
+            "measure": "rain",
+            "area": 7850.393436441231,
+            "dates": [
+              "202401",
+              "202402",
+              "202403",
+              ...
+            ],
+            ...
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            ...
+          ]
+        ]
+      }
+    }
+  ]
+}
+```
+
+### Valid chaining sequences
+
+The follow chain of calls is supported, where [name] can be replaced with
+tsdm, tsdmgreen, tsdmdead and fc. 
+
+- /getpoint[name]stats followed by any number of /get[name]stats and /getrain
+  (as in the example above)
+- /get[name]stats followed by any number of /get[name]stats and /getrain 
+- /getrain followed by any number of /get[name]stats 
+- /getpointrain followed by any number of /get[name]stats 
+
+## Handling special cases
+
+### Calculating statistics for multiple features
+
+If you pass the API a FeatureCollection in the request body, it
+calculates one set of statistics for the aggregated area.
+The statistics are identical for every feature in the response. So you only
+need to read the statistics from the first feature in the response.
+The response also contains an "aggregate=yes" property.
+
+To calculate statistics for multiple features individually, you must
+call the API multiple times, passing a single feature in each request.
+
+### Handling the response time-out limit of 30 seconds
+
+The API has a time-out period of 30 seconds. You may need to shorten the
+time-period (`startdate` and `enddate` parameters) of your request, and
+make multiple calls to the API.
+
+If you wish, you may chain the requests with different start and end dates.
+A new stats object for the second request is appended to the stats
+list of the Feature's properties.
+
+For example. Your first request to `/gettsdmstats` is for the year 2024
+(`startdate=20240101&enddate=20241231`). The response is changed with a 
+second request to `gettdsmstats` for the year 2025
+(`startdate=20250101&enddate=20251231`). The output contains two stats objects
+in the stats list, one for each year.
+
+```json
+{ 
+  "type": "Feature", 
+  "properties": { 
+    "name": "feature_a",
+    "aggregate": "yes",
+    "stats": [ 
+      { 
+        "measure": "tsdm", 
+        "unit": "kg/ha",
+        "area": 7850.393436441231
+        "dates": [
+              "20230104",
+              "20230109",
+              ...,
+              "20231230"
+        ],
+        ... 
+      }, 
+      { 
+        "measure": "tsdm", 
+        "unit": "kg/ha", 
+        "area": 7850.393436441231
+        "dates": [
+              "20240104",
+              "20240109",
+              ...,
+              "20241230"
+        ],
+        ...
+      }  
+    ] 
+  }, 
+  "geometry": { 
+    "type": "Polygon", 
+    "coordinates": [ 
+      ... 
+    ] 
+  }
+}
+```
+
+### Handling the request and response size limit of 6 MB
+
+The maximum size of a request's body or the response is 6MB.
+This cannot be increased. You must restructure your requests if
+you hit this limit.
