@@ -296,7 +296,7 @@ request appends the rainfall statistics to the feature's stats.
 Summary of requests:
 
 ```
-POST https://data.afm.cibolabs.com/getpointtsdmstats?lat=-23.52&lon=148.16&buffer=5000&startdate=20240101&enddate=20241231&percentiles=10,25,50,75,90
+GET https://data.afm.cibolabs.com/getpointtsdmstats?lat=-23.52&lon=148.16&buffer=5000&startdate=20240101&enddate=20241231&percentiles=10,25,50,75,90
 
 POST https://data.afm.cibolabs.com/getfcstats?startdate=20240101&enddate=20241231&percentiles=10,25,50,75,90
 
@@ -314,7 +314,7 @@ buffer="5000"
 percentiles="10,25,50,75,90"
 
 # First call to /getpointtsdmstats
-curl -s -X POST \
+curl -s -X GET \
     --output output_1.json \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${TOKEN}" \
