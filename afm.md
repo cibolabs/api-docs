@@ -265,6 +265,68 @@ Notes:
 }
 ```
 
+### /gettsdmthumbail
+
+The thumbnail endpoints return a PNG format image. Some endpoints take a point and a buffer size and others
+take a GeoJSON in the POST body - please check the swagger docs for these details. It is important that
+you specify the `Accept: image/png` HTTP header so that the response is formatted properly.
+
+**Request**
+
+POST https://data.afm.cibolabs.com/gettsdmthumbail
+
+```bash
+geojson_file="your_area_of_interest.geojson"
+geojson=$(cat "$geojson_file")
+
+curl -s -X POST \ 
+    --output data.json \ 
+    -H "Content-Type: application/json" \ 
+    -H "Authorization: Bearer ${TOKEN}" \ 
+    -H "Accept: image/png" \
+    -d "$geojson" \ 
+    "https://data.afm.cibolabs.com/gettsdmthumbail" 
+```
+
+
+**Body** 
+
+```json
+{ 
+  "type": "FeatureCollection", 
+  "features": [ 
+    { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "feature_a" 
+      }, 
+      "geometry": { 
+        "type": "Polygon", 
+        "coordinates": [ 
+        ...
+       ] 
+    }, 
+    { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "feature_b", 
+      }, 
+      "geometry": { 
+        "type": "Polygon", 
+        "coordinates": [ 
+        ...
+       ] 
+    } 
+  ]
+} 
+```
+
+**Response**
+
+Response will be an image in PNG format. Below is an example:
+
+![Example thumbnail](data_tsdmthumb.png)
+
 
 ## Chaining
 
@@ -272,6 +334,9 @@ You can chain multiple calls to the AFM API endpoints together, in sequence.
 When chaining, pass the returned geojson from one request
 as the body of the next request.
 Statistics are appended to the geojson's Feature on each call.
+
+Note that the thumbnail endpoints return PNG, not JSON so they cannot be 
+chained in the same way.
 
 
 ### Chaining example
