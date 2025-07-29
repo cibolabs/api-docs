@@ -198,7 +198,6 @@ curl -s -X POST \
               "median_error": [202, 197, ...],
               "foo": [398698, 389123, ...],
               "change_rate": [-10, -12, ...],
-              "trend": "Decreasing",
               "captured": [100, 89, ...],
               "captured_median": [1301, 1143, ...],
               "captured_foo": [424126, 412345, ...]
@@ -226,8 +225,7 @@ curl -s -X POST \
               "median": [1681, 1700, ...],
               "median_error": [146, 150, ...],
               "foo": [252150, 255000, ...],
-              "change_rate": [null, 19, ...],
-              "trend": "Steady"
+              "change_rate": [null, 19, ...]
           }
         ]
       }
@@ -256,7 +254,6 @@ Notes:
 - median_error is the expected variation in the median estimate
 - Foo (feed on offer) in kg, calculated as the median * area_ha 
 - change rate is measured in kg / ha / day
-- a description of the trend is provided
 
 
 ### /geojson
