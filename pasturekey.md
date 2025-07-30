@@ -181,68 +181,38 @@ curl -s -X POST \
 
 ```json
 {
-  "type": "FeatureCollection",
   "property_id": "e354f641-fce2-4299-a7d4-561dc31597d2",
-  "features": [
+  "paddocks": [
     {
-      "type": "Feature",
-      "properties": {
-        "paddock_id": "4c4f1966-7436-4ac1-88c2-8cc8f46969c3",
-        "area_ha": 326,
-        "stats": [
-          {
-              "measure": "tsdm",
-              "unit": "kg/ha",
-              "dates": ["20250501", "20250506", ...],
-              "median": [1223, 1212, ...],
-              "median_error": [202, 197, ...],
-              "foo": [398698, 389123, ...],
-              "change_rate": [-10, -12, ...],
-              "captured": [100, 89, ...],
-              "captured_median": [1301, 1143, ...],
-              "captured_foo": [424126, 412345, ...]
-          }
-        ]
-      }
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          ...
-        ]
-      }
+      "paddock_id": "4c4f1966-7436-4ac1-88c2-8cc8f46969c3",
+      "paddock_name": "charlies lane",
+      "area_ha": 326,
+      "stats": [
+        {
+          "measure": "tsdm",
+          "unit": "kg/ha",
+          "dates": ["20250501", "20250506", ...],
+          "median": [1223, 1212, ...],
+          "median_error": [202, 197, ...],
+          "foo": [398698, 389123, ...],
+          "change_rate": [-10, -12, ...],
+          "captured": [100, 89, ...],
+          "captured_median": [1301, 1143, ...],
+          "captured_foo": [424126, 412345, ...]
+        }
+      ]
     },
     {
-      "type": "Feature",
-      "properties": {
-        "paddock_id": "02c50970-308e-4f26-9841-0df5899f3daa",
-        "area_ha": 150,
-        "stats": [
-          {
-              "measure": "tsdm",
-              "unit": "kg/ha",
-              "dates": ["20250501", "20250506", ...],
-              "captured": [100, 95, ...],
-              "median": [1681, 1700, ...],
-              "median_error": [146, 150, ...],
-              "foo": [252150, 255000, ...],
-              "change_rate": [null, 19, ...]
-          }
-        ]
-      }
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          ...
-        ]
-      }
+      "paddock_id": "02c50970-308e-4f26-9841-0df5899f3daa",
+      "area_ha": 150,
+      ...
     }
   ]
 }
 ```
 
 Notes:
-- The properties object of every feature (paddock) contains a list
-  of stats objects, one for each ‘measure’ (in this case only one measure)
+- dates are the dates of the satellite overpasses
 - captured is the percentage of the paddock captured in the satellite
   image; this is less than 100 when:
   - cloud or cloud shadow obscures the satellite’s view of the ground
@@ -383,6 +353,7 @@ curl -s -X GET \
       "type": "Feature",
       "properties": {
         "paddock_id": "4c4f1966-7436-4ac1-88c2-8cc8f46969c3",
+        "paddock_name": "charlies lane",
         "area_ha": 326,
         "stats": [
           {
@@ -434,6 +405,52 @@ Notes:
   you wish by linking it with the estimated_median_tsdm field
   (the legend attribute is a geojson foreign member:
   https://www.rfc-editor.org/rfc/rfc7946#section-6.1)
+
+
+### /geom
+
+> ⚠️ Important: Not implemented yet.
+
+Get the most recent paddock geometries for the farm, attributed with the Cibolabs paddock IDs.
+
+**Request**
+
+POST https://data.pkey.cibolabs.com/geom/e354f641-fce2-4299-a7d4-561dc31597d2
+
+```bash
+farmid="e354f641-fce2-4299-a7d4-561dc31597d2"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.pkey.cibolabs.com/geom/${farmid}"
+```
+
+**Response**
+
+```json
+{
+  "type": "FeatureCollection",
+  "property_id": "e354f641-fce2-4299-a7d4-561dc31597d2",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "paddock_id": "4c4f1966-7436-4ac1-88c2-8cc8f46969c3",
+        "paddock_name": "charlies lane",
+        "area_ha": 37.11
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          ...
+        ]
+      }
+    },
+    ...
+  ]
+}
+```
 
 
 ### /downloaddata
