@@ -360,12 +360,14 @@ curl -s -X GET \
             "measure": "tsdm",
             "unit": "kg/ha",
             "dates": ["20250210"],
-            "captured": [100],
             "median": [1223],
             "median_error": [202],
             "foo": [398698],
             "change_rate": [-10],
             "trend": "Decreasing",
+            "captured": [100],
+            "captured_median": [1109],
+            "captured_foo": [361534]
           }
         ]
       },
