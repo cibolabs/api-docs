@@ -157,8 +157,6 @@ curl -s -X POST \
 
 ### /gettsdmstats
 
-> ⚠️ Important: Not implemented yet. Earmarked to replace /getpaddocktsdmts.
-
 Get paddock statistics for pasture biomass measured as
 Total Standing Dry Matter (TSDM).
 
@@ -321,8 +319,6 @@ Notes:
 
 ### /snapshot
 
-> ⚠️ Important: Not implemented yet. Earmarked to replace /geojson
-
 Get a snapshot of the farm’s paddocks as a geojson file,
 attributed with key statistics for the requested date.
 Returns data for the date closest to the requested date for which
@@ -410,8 +406,6 @@ Notes:
 
 
 ### /geom
-
-> ⚠️ Important: Not implemented yet.
 
 Get the most recent paddock geometries for the farm, attributed with the Cibolabs paddock IDs.
 
