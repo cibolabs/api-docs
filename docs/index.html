@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+    <head>
+        <!-- Leaflet -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+         crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+         crossorigin=""></script>
+         
+        <!-- From https://github.com/fifogipo/leaflet-custom-headers -->
+        <script src="static/js/leaflet-custom-headers/main.js"></script>
+         
+        <!-- From https://github.com/Eclipse1979/leaflet-slider -->
+        <link rel="stylesheet" href="/static/js/leaflet-slider/leaflet-slider.css" />
+        <script src="static/js/leaflet-slider/leaflet-slider.js"></script>
+        
+        <!-- From https://github.com/ismyrnow/leaflet-groupedlayercontrol -->
+        <link rel="stylesheet" href="/static/js/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.min.css" />
+        <script src="static/js/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.min.js"></script>
+        
+        <!-- JSChart -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+             
+        <!-- our javascript (last) -->
+        <script src="static/js/index.js"></script>
+    </head>
+    <body onload="init();">
+    <dialog id="myDialog">
+        <h2>Enter your Access Token</h2>
+        <form method="dialog">
+            <label for="token">Token:</label>
+            <input type="text" id="token" name="token" required>
+            <label for="property_id">Property Id:</label>
+            <input type="text" id="property_id" name="property_id" value="434b1601-200d-428c-9c6d-1446b05ecc3b" required>
+            <button type="submit">Submit</button>
+        </form>
+    </dialog>
+        <div id="map" style="height: 60vh;width: 100vw"></div>
+        <h3 id="plottitle" hidden>Paddocks' Total Standing Dry Matter</h3>
+        <canvas id="plot" style="height: 35vh;width: 100vw"></canvas>
+    </body>
+</html>

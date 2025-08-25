@@ -58,3 +58,9 @@ A typical workflow is:
 - Use our login end point to exchange your credentials for an access token
 - Pass the access token in the `Authorization` header of your http requests to
   our APIs' endpoints
+
+
+## The docs folder
+
+This contains a simple demo of accessing the API's to create a map using the [Leaflet](https://leafletjs.com/) library.
+This is served up as a github page at [https://cibolabs.github.io/api-docs](https://cibolabs.github.io/api-docs).
