@@ -19,7 +19,12 @@
         <!-- From https://github.com/ismyrnow/leaflet-groupedlayercontrol -->
         <link rel="stylesheet" href="/static/js/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.min.css" />
         <script src="static/js/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.min.js"></script>
-         
+        
+        <!-- JSChart -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+             
         <!-- our javascript (last) -->
         <script src="static/js/index.js"></script>
     </head>
@@ -34,7 +39,7 @@
             <button type="submit">Submit</button>
         </form>
     </dialog>
-        <div id="map" style="height: 80vh;width: 100vw"></div>
-        <div id="plot"></div>
+        <div id="map" style="height: 60vh;width: 100vw"></div>
+        <canvas id="plot" style="height: 39vh;width: 100vw"></canvas>
     </body>
 </html>

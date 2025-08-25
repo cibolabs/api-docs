@@ -4,6 +4,7 @@
 let g_tsdmlayer = null; 
 let g_nbarlayer = null;
 const g_url = 'https://tiles.pasturekey.cibolabs.com';
+let g_chart = null;
 
 function init()
 {
@@ -73,6 +74,73 @@ function init()
                 exclusiveGroups: ["CiboLabs"]
             }
             let layerControl = L.control.groupedLayers(basemap, groupedOverlay, options).addTo(map);
+            
+            // do plot
+            fetch('https://data.pasturekey.cibolabs.com/gettsdmstats/' + property_id.value, {
+                headers: {
+                    'Authorization': 'Bearer ' + token.value,
+                    'Accept': 'application/json'
+               },
+                method: "POST"})
+            .then(response => response.json())
+            .then(function(data) {
+            
+                // pull out the data for every paddock
+                let paddock_data = [];
+                let labels = null;
+                for(const paddock of data.paddocks)
+                {
+                    const paddock_obj = {
+                        'label': paddock.paddock_name,
+                        'data': paddock.stats[0].median
+                    };
+                    paddock_data.push(paddock_obj);
+                    
+                    if(!labels) 
+                    {
+                      labels = [];
+                      for(const datestr of paddock.stats[0].dates)
+                      {
+                          const year = datestr.substring(0,4);
+                          const month = datestr.substring(4,6);
+                          const day = datestr.substring(6,8);
+                          labels.push(new Date(year, month-1, day));
+                      }  
+                    }
+                }
+            
+                if(g_chart)
+                {
+                    g_chart.destroy();
+                }
+                const ctx = document.getElementById('plot');
+                g_chart = new Chart(ctx, {
+                    'type': 'line',
+                    'data': {
+                        'labels': labels,
+                        'datasets': paddock_data
+                    },
+                    'options': {
+                        'plugins': {
+                            'legend': {
+                                'display': false // This hides the legend
+                            }
+                        },
+                        'scales': {
+                            'x': {
+                                'type': 'time',
+                                'time': {
+                                    'displayFormats': {
+                                        'unit': 'day',
+                                        'day': 'd MMM yyyy'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+            });
         });
     });   
     myDialog.showModal();
