@@ -62,10 +62,17 @@ function init()
             slider.addTo(map);
             
             // layer control
+            let groupedOverlay = {
+                "CiboLabs": {
+                    "TSDM": g_tsdmlayer,
+                    "NBAR": g_nbarlayer
+                }
+            };
             let basemap = {"OpenStreetMap": OSMLayer};
-            let cibolayers = {"TSDM": g_tsdmlayer,
-                "NBAR": g_nbarlayer};
-            let layerControl = L.control.layers(basemap, cibolayers).addTo(map);
+            let options = {
+                exclusiveGroups: ["CiboLabs"]
+            }
+            let layerControl = L.control.groupedLayers(basemap, groupedOverlay, options).addTo(map);
         });
     });   
     myDialog.showModal();
