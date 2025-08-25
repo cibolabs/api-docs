@@ -30,7 +30,7 @@
     </head>
     <body onload="init();">
     <dialog id="myDialog">
-        <h2>Enter your token</h2>
+        <h2>Enter your Access Token</h2>
         <form method="dialog">
             <label for="token">Token:</label>
             <input type="text" id="token" name="token" required>
@@ -40,6 +40,7 @@
         </form>
     </dialog>
         <div id="map" style="height: 60vh;width: 100vw"></div>
-        <canvas id="plot" style="height: 39vh;width: 100vw"></canvas>
+        <h3 id="plottitle" hidden>Paddocks' Total Standing Dry Matter</h3>
+        <canvas id="plot" style="height: 35vh;width: 100vw"></canvas>
     </body>
 </html>

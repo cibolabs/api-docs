@@ -44,7 +44,6 @@ function init()
                     'Accept': 'image/png'                            
                 }
             });
-            g_tsdmlayer.addTo(map);
             g_nbarlayer = new L.TileLayerHeaders(g_url + '/nbar/' + last_date + '/' + property_id.value + '/{z}/{x}/{y}', {
                 attribution: '&copy; <a href="https://www.cibolabs.com.au/">CiboLabs</a>',
                 customHeaders: {
@@ -52,6 +51,7 @@ function init()
                     'Accept': 'image/png'                            
                 }
             });
+            g_nbarlayer.addTo(map); // displayed by default
             
             // dates
             let slider = L.control.slider(function(value) {
@@ -113,6 +113,10 @@ function init()
                 {
                     g_chart.destroy();
                 }
+                
+                // display this now there is data
+                document.getElementById('plottitle').removeAttribute("hidden");
+                
                 const ctx = document.getElementById('plot');
                 g_chart = new Chart(ctx, {
                     'type': 'line',
