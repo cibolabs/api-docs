@@ -3,7 +3,8 @@
 // globals
 let g_tsdmlayer = null; 
 let g_nbarlayer = null;
-const g_url = 'https://tiles.pasturekey.cibolabs.com';
+const g_tileurl = 'https://tiles.pasturekey.cibolabs.com';
+const g_pkeyurl = 'https://data.pasturekey.cibolabs.com';
 let g_chart = null;
 
 function init()
@@ -28,7 +29,7 @@ function init()
 
         
         // get dates for this property_id
-        fetch(g_url + '/getimagedates/' + property_id.value, {
+        fetch(g_tileurl + '/getimagedates/' + property_id.value, {
             headers: {
                 'Authorization': 'Bearer ' + token.value,
                 'Accept': 'application/json'
@@ -37,14 +38,14 @@ function init()
         .then(response => response.json())
         .then(function(data) {
             const last_date = data.dates[data.dates.length - 1];
-            g_tsdmlayer = new L.TileLayerHeaders(g_url + '/tsdm/' + last_date + '/' + property_id.value + '/{z}/{x}/{y}', {
+            g_tsdmlayer = new L.TileLayerHeaders(g_tileurl + '/tsdm/' + last_date + '/' + property_id.value + '/{z}/{x}/{y}', {
                 attribution: '&copy; <a href="https://www.cibolabs.com.au/">CiboLabs</a>',
                 customHeaders: {
                     'Authorization': 'Bearer ' + token.value,
                     'Accept': 'image/png'                            
                 }
             });
-            g_nbarlayer = new L.TileLayerHeaders(g_url + '/nbar/' + last_date + '/' + property_id.value + '/{z}/{x}/{y}', {
+            g_nbarlayer = new L.TileLayerHeaders(g_tileurl + '/nbar/' + last_date + '/' + property_id.value + '/{z}/{x}/{y}', {
                 attribution: '&copy; <a href="https://www.cibolabs.com.au/">CiboLabs</a>',
                 customHeaders: {
                     'Authorization': 'Bearer ' + token.value,
@@ -53,7 +54,22 @@ function init()
             });
             g_nbarlayer.addTo(map); // displayed by default
             
-            // dates
+            // and empty geojson layer to be populated later
+            let geojsonLayer = L.geoJSON().addTo(map);
+            
+            // start a fetch do the property boundaries can be displayed when ready
+            fetch(g_pkeyurl + '/geom/' + property_id.value, {
+                headers: {
+                    'Authorization': 'Bearer ' + token.value,
+                    'Accept': 'application/json'
+               },
+                method: "POST"})
+            .then(response => response.json())
+            .then(function(data) {
+                geojsonLayer.addData(data);
+            });
+            
+            // dates - make a slider
             let slider = L.control.slider(function(value) {
                 newLabel(data.dates[value], map);
             }, {'position': 'bottomright', 'max': data.dates.length - 1, 
@@ -67,6 +83,9 @@ function init()
                 "CiboLabs": {
                     "TSDM": g_tsdmlayer,
                     "NBAR": g_nbarlayer
+                },
+                "Other": {
+                    "Property Boundaries": geojsonLayer
                 }
             };
             let basemap = {"OpenStreetMap": OSMLayer};
@@ -75,8 +94,8 @@ function init()
             }
             let layerControl = L.control.groupedLayers(basemap, groupedOverlay, options).addTo(map);
             
-            // do plot
-            fetch('https://data.pasturekey.cibolabs.com/gettsdmstats/' + property_id.value, {
+            // do plot when the result of this fetch comes in
+            fetch(g_pkeyurl + '/gettsdmstats/' + property_id.value, {
                 headers: {
                     'Authorization': 'Bearer ' + token.value,
                     'Accept': 'application/json'
@@ -157,10 +176,10 @@ function newLabel(label, map)
     const property_id = form.querySelector('#property_id');
     if( g_tsdmlayer )
     {
-        g_tsdmlayer.setUrl(g_url + '/tsdm/' + label + '/' + property_id.value + '/{z}/{x}/{y}');
+        g_tsdmlayer.setUrl(g_tileurl + '/tsdm/' + label + '/' + property_id.value + '/{z}/{x}/{y}');
     }
     if( g_nbarlayer )
     {
-        g_nbarlayer.setUrl(g_url + '/nbar/' + label + '/' + property_id.value + '/{z}/{x}/{y}');
+        g_nbarlayer.setUrl(g_tileurl + '/nbar/' + label + '/' + property_id.value + '/{z}/{x}/{y}');
     }
 }
