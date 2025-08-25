@@ -130,6 +130,7 @@ function init()
                             'x': {
                                 'type': 'time',
                                 'time': {
+                                    'tooltipFormat':'dd/MM/yyyy',
                                     'displayFormats': {
                                         'unit': 'day',
                                         'day': 'd MMM yyyy'

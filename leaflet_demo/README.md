@@ -20,4 +20,4 @@ are reloaded when you refresh.
 
 ## Github Pages
 
-TODO:
+These pages are automatically serverd by github pages.
