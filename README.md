@@ -11,9 +11,10 @@ Learn more about these services at [cibolabs.com.au](https://cibolabs.com.au).
 - [Quick start](quickstart.md)
 - [Login API](login.md)
 - [AFM API](afm.md)
+- [AFM Tile API](afm_tile.md)
 - [Pasture Key API](pasturekey.md)
-
-
+- [Pasture Key Tile API](pasturekey_tile.md)
+- [Demo Pasture Key Web App](docs/README.md)
 
 ## The AFM API
 
@@ -29,6 +30,16 @@ time of the request.
 
 [AFM API](afm.md)
 
+## The AFM Tile API
+
+Use the AFM Tile API to retrieve satellite imagery, in png file format,
+to display in web mapping applications.
+
+The tile API follows the
+[XYZ tile scheme](https://en.wikipedia.org/wiki/Tiled_web_map),
+which is a standard for serving tiles over the web.
+
+[AFM Tile API](afm_tile.md)
 
 ## The Pasture Key API
 
@@ -45,6 +56,8 @@ Pasture Key subscription. This is because the statistics are pre-computed
 
 [Pasture Key API](pasturekey.md)
 
+[Demo Pasture Key Web App](docs/README.md)
+
 ## Accessing the APIs
 
 Access requires credentials.
@@ -58,9 +71,3 @@ A typical workflow is:
 - Use our login end point to exchange your credentials for an access token
 - Pass the access token in the `Authorization` header of your http requests to
   our APIs' endpoints
-
-
-## The docs folder
-
-This contains a simple demo of accessing the API's to create a map using the [Leaflet](https://leafletjs.com/) library.
-This is served up as a github page at [https://cibolabs.github.io/api-docs](https://cibolabs.github.io/api-docs).
