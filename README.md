@@ -60,7 +60,14 @@ Pasture Key subscription. This is because the statistics are pre-computed
 
 ## The Pasture Key Tile API
 
-TODO: flesh this out a little.
+Use the Pasture Key Tile API to retrieve raster products, in png file format,
+to display in web mapping applications.
+
+The tile API follows the
+[XYZ tile protocol](https://en.wikipedia.org/wiki/Tiled_web_map),
+which is a standard for serving tiles over the web.
+
+[Pasture Key Tile API](pasturekey_tile.md)
 
 ## Accessing the APIs
 

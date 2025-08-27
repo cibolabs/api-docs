@@ -2,7 +2,7 @@
 
 Use the Pasture Key Tile API to retrieve web map tiles for a
 farm in CiboLabs's Pasture Key service using the
-[XYZ tile protocol](https://en.wikipedia.org/wiki/Tiled_web_map)
+[XYZ tile protocol](https://en.wikipedia.org/wiki/Tiled_web_map).
 
 See our [online Pasture Key Tile API docs](https://tiles.pasturekey.cibolabs.com/swagger)
 for the full list of endpoints.
