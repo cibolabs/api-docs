@@ -49,6 +49,33 @@ curl -s -X GET \
 }
 ```
 
+### /getbounds
+
+**Request**
+
+GET https://tiles.pasturekey.cibolabs.com/getbounds/e354f641-fce2-4299-a7d4-561dc31597d2
+
+```bash
+farmid="e354f641-fce2-4299-a7d4-561dc31597d2"
+
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://tiles.pasturekey.cibolabs.com/getbounds/${farmid}"
+```
+
+**Response**
+
+```json
+{
+  "xmin": 149.768297,
+  "xmax": 149.905016937,
+  "ymin": -26.840771,
+  "ymax": -26.668700369
+}
+```
+
 ### /tsdm
 
 Get a Total Standing Dry Matter (TSDM) web map tile for
