@@ -1,5 +1,8 @@
 # AFM Tile API
 
+Use the AFM Tile API to retrieve web map tiles using the
+[XYZ tile protocol](https://en.wikipedia.org/wiki/Tiled_web_map)
+
 CiboLabs's [National Comparison app](https://www.cibolabs.com.au/products/national-comparison/)
 demonstrates what is possible with the AFM Tile API.
 
@@ -39,6 +42,8 @@ See [/getimagedates](afm.md#getimagedates) for details.
 Get a Total Standing Dry Matter (TSDM) web map tile for 21 August 2025 at 
 zoom level 7 and tile grid X=115, Y=74.
 
+GET https://tiles.national.cibolabs.com/tsdm/20250821/7/115/74
+
 ```bash
 curl -X GET \
     --output "tsdm_20250821_7_115_74.png" \
@@ -52,6 +57,8 @@ curl -X GET \
 Get an image tile of the TSDM decile. Each pixel is coloured according
 to its decile rank (compared to a reference dataset) of
 Total Standing Dry Matter (TSDM).
+
+GET https://tiles.national.cibolabs.com/percentiletsdm/20250821/7/115/74
 
 ```bash
 curl -X GET \
@@ -69,6 +76,8 @@ the proportions of these three fractions:
 - green: fraction of green vegetation cover
 - blue: fraction of dead vegetation cover
 
+GET https://tiles.national.cibolabs.com/fractionalcover/20250821/7/115/74
+
 ```bash
 curl -X GET \
     --output "fractionalcover_20250821_7_115_74.png" \
@@ -82,6 +91,8 @@ curl -X GET \
 Get an image tile of image reflectance. NBAR is a technical term meaning
 nadir-view, BRDF-adjusted surface reflectance.
 
+GET https://tiles.national.cibolabs.com/nbar/20250821/7/115/74
+
 ```bash
 curl -X GET \
     --output "nbar_20250821_7_115_74.png" \
@@ -93,7 +104,7 @@ curl -X GET \
 
 ### /legend
 
-The pixels of of the tiles are coloured. The colours
+The pixels of the tiles are coloured. The colours
 represents a measurement range or category.
 For example, for the TSDM product, the pasture biomass of red pixels is less
 than 250 kg/ha.
@@ -107,6 +118,10 @@ need a legend for fractional cover to display in your application.
 Nor does /legend support the nbar product.
 No colour table is required because it is a reflectance image.
 
+**request**
+
+GET https://tiles.national.cibolabs.com/legend/tsdm
+
 
 ```bash
 curl -X GET \
@@ -115,6 +130,8 @@ curl -X GET \
     -H "Accept: application/json" \
     "https://tiles.national.cibolabs.com/legend/tsdm"
 ```
+
+**response**
 
 tsdm_legend.json:
 

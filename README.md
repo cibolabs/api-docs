@@ -32,11 +32,11 @@ time of the request.
 
 ## The AFM Tile API
 
-Use the AFM Tile API to retrieve satellite imagery, in png file format,
+Use the AFM Tile API to retrieve raster products, in png file format,
 to display in web mapping applications.
 
 The tile API follows the
-[XYZ tile scheme](https://en.wikipedia.org/wiki/Tiled_web_map),
+[XYZ tile protocol](https://en.wikipedia.org/wiki/Tiled_web_map),
 which is a standard for serving tiles over the web.
 
 [AFM Tile API](afm_tile.md)
@@ -57,6 +57,10 @@ Pasture Key subscription. This is because the statistics are pre-computed
 [Pasture Key API](pasturekey.md)
 
 [Demo Pasture Key Web App](docs/README.md)
+
+## The Pasture Key Tile API
+
+TODO: flesh this out a little.
 
 ## Accessing the APIs
 
