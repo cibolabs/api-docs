@@ -13,10 +13,22 @@ We assume:
 
 ## Exchange credentials for an access token
 
+You only need to get an access token once every 24 hours.
+Use the access token for all subsequent requests within 24 hours.
+When the access token expires, the APIs respond with a message indicating such.
+For example:
+
+````json
+{"message":"The incoming token has expired"}
+```
+
+Use this as a trigger to request a new access token.
+
 Important: for security, do not hard-code your credentials into
 scripts, which might leak from code repositories. 
 
-The example assumes you’ve set two environment variables, CIBO_CLIENT_ID and CIBO_CLIENT_SECRET, in your shell session. 
+The example assumes you’ve set two environment variables,
+CIBO_CLIENT_ID and CIBO_CLIENT_SECRET, in your shell session. 
 
 
 ```bash 
