@@ -16,9 +16,28 @@ function init()
         const property_id = form.querySelector('#property_id');
         console.log('User entered:', token.value, property_id.value);
         
-        // create map and zoom in on farm
-        // TODO: can we get extents programmatically?
-        let map = L.map('map').setView([-31.349912533186938, 150.13404649761717], 14);
+        // create map
+        let map = L.map('map')
+        
+        // get the bounds of the entered farm
+        fetch(g_tileurl + '/getbounds/' + property_id.value, {
+                headers: {
+                    'Authorization': 'Bearer ' + token.value,
+                    'Accept': 'application/json'
+               },
+                method: "GET"})
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                map.fitBounds([[data.ymin, data.xmin], [data.ymax, data.xmax]]);
+            })
+            .catch(error => {
+              console.error('Fetch error:', error);
+            });
         
         // background layer
         const OSMLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -34,9 +53,14 @@ function init()
                 'Authorization': 'Bearer ' + token.value,
                 'Accept': 'application/json'
            },
-            method: "GET"})
-        .then(response => response.json())
-        .then(function(data) {
+           method: "GET"})
+          .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+           })
+          .then(function(data) {
             const last_date = data.dates[data.dates.length - 1];
             g_tsdmlayer = new L.TileLayerHeaders(g_tileurl + '/tsdm/' + last_date + '/' + property_id.value + '/{z}/{x}/{y}', {
                 attribution: '&copy; <a href="https://www.cibolabs.com.au/">CiboLabs</a>',
@@ -63,11 +87,20 @@ function init()
                     'Authorization': 'Bearer ' + token.value,
                     'Accept': 'application/json'
                },
-                method: "POST"})
-            .then(response => response.json())
-            .then(function(data) {
+               method: "POST"})
+               .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+              })
+              .then(function(data) {
                 geojsonLayer.addData(data);
-            });
+              })
+              .catch(error => {
+                  console.error('Fetch error:', error);
+              });
+
             
             // dates - make a slider
             let slider = L.control.slider(function(value) {
@@ -101,7 +134,12 @@ function init()
                     'Accept': 'application/json'
                },
                 method: "POST"})
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(function(data) {
             
                 // pull out the data for every paddock
@@ -163,8 +201,13 @@ function init()
                         }
                     }
                 });
-                
+            })
+            .catch(error => {
+               console.error('Fetch error:', error);
             });
+        })
+        .catch(error => {
+           console.error('Fetch error:', error);
         });
     });   
     myDialog.showModal();
