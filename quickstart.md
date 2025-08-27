@@ -18,7 +18,7 @@ Use the access token for all subsequent requests within 24 hours.
 When the access token expires, the APIs respond with a message indicating such.
 For example:
 
-````json
+```json
 {"message":"The incoming token has expired"}
 ```
 
