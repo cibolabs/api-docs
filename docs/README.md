@@ -26,8 +26,7 @@ of our demo farm.
 - Authenticates with the CiboLabs PastureKey API to access farm-specific data
 
 **Interactive Satellite Imagery Map**
-- Creates a zoomable map centered on an Australian farm
-  location (-31.349°, 150.134°)
+- Creates a zoomable map centred on the property's bounding box
 - Displays two types of satellite imagery layers:
   - **TSDM** (Total Standing Dry Matter) - shows biomass/vegetation density
   - **NBAR** (Nadir BRDF Adjusted Reflectance) - shows surface reflectance data
