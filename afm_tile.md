@@ -6,8 +6,12 @@ Use the AFM Tile API to retrieve web map tiles using the
 CiboLabs's [National Comparison app](https://www.cibolabs.com.au/products/national-comparison/)
 demonstrates what is possible with the AFM Tile API.
 
-See our [online AFM Tile API docs](https://tiles.national.cibolabs.com/swagger)
+See our [online AFM Tile API docs](https://tiles.afm.cibolabs.com/swagger)
 for the list of endpoints.
+
+**Note:**  The older https://tiles.national.cibolabs.com/ end URL is still available
+but will be retired soon in favour of the newer https://tiles.afm.cibolabs.com. Existing
+code should be updated.
 
 ## Examples
 
@@ -42,14 +46,14 @@ See [/getimagedates](afm.md#getimagedates) for details.
 Get a Total Standing Dry Matter (TSDM) web map tile for 21 August 2025 at 
 zoom level 7 and tile grid X=115, Y=74.
 
-GET https://tiles.national.cibolabs.com/tsdm/20250821/7/115/74
+GET https://tiles.afm.cibolabs.com/tsdm/20250821/7/115/74
 
 ```bash
 curl -X GET \
     --output "tsdm_20250821_7_115_74.png" \
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Accept: image/png" \
-    "https://tiles.national.cibolabs.com/tsdm/20250821/7/115/74"
+    "https://tiles.afm.cibolabs.com/tsdm/20250821/7/115/74"
 ```
 
 ### /percentiletsdm
@@ -58,14 +62,14 @@ Get an image tile of the TSDM decile. Each pixel is coloured according
 to its decile rank (compared to a reference dataset) of
 Total Standing Dry Matter (TSDM).
 
-GET https://tiles.national.cibolabs.com/percentiletsdm/20250821/7/115/74
+GET https://tiles.afm.cibolabs.com/percentiletsdm/20250821/7/115/74
 
 ```bash
 curl -X GET \
     --output "percentiletsdm_20250821_7_115_74.png" \
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Accept: image/png" \
-    "https://tiles.national.cibolabs.com/percentiletsdm/20250821/7/115/74"
+    "https://tiles.afm.cibolabs.com/percentiletsdm/20250821/7/115/74"
 ```
 
 ### /fractionalcover
@@ -76,14 +80,14 @@ the proportions of these three fractions:
 - green: fraction of green vegetation cover
 - blue: fraction of dead vegetation cover
 
-GET https://tiles.national.cibolabs.com/fractionalcover/20250821/7/115/74
+GET https://tiles.afm.cibolabs.com/fractionalcover/20250821/7/115/74
 
 ```bash
 curl -X GET \
     --output "fractionalcover_20250821_7_115_74.png" \
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Accept: image/png" \
-    "https://tiles.national.cibolabs.com/fractionalcover/20250821/7/115/74"
+    "https://tiles.afm.cibolabs.com/fractionalcover/20250821/7/115/74"
 ```
 
 ### /nbar
@@ -91,14 +95,14 @@ curl -X GET \
 Get an image tile of image reflectance. NBAR is a technical term meaning
 nadir-view, BRDF-adjusted surface reflectance.
 
-GET https://tiles.national.cibolabs.com/nbar/20250821/7/115/74
+GET https://tiles.afm.cibolabs.com/nbar/20250821/7/115/74
 
 ```bash
 curl -X GET \
     --output "nbar_20250821_7_115_74.png" \
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Accept: image/png" \
-    "https://tiles.national.cibolabs.com/nbar/20250821/7/115/74"
+    "https://tiles.afm.cibolabs.com/nbar/20250821/7/115/74"
 ```
 
 
@@ -120,7 +124,7 @@ No colour table is required because it is a reflectance image.
 
 **request**
 
-GET https://tiles.national.cibolabs.com/legend/tsdm
+GET https://tiles.afm.cibolabs.com/legend/tsdm
 
 
 ```bash
@@ -128,7 +132,7 @@ curl -X GET \
     --output "tsdm_legend.json" \
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Accept: application/json" \
-    "https://tiles.national.cibolabs.com/legend/tsdm"
+    "https://tiles.afm.cibolabs.com/legend/tsdm"
 ```
 
 **response**
