@@ -105,6 +105,25 @@ curl -X GET \
     "https://tiles.afm.cibolabs.com/nbar/20250821/7/115/74"
 ```
 
+### /woodychange 
+
+Get an image of woody change. This is a thematic image where
+each class relates to a different kind of woody change. See the response
+from the `/legend` endpoint for `woodychange` for information on 
+which numbers relate to what woody change type and the colours to be
+used.
+
+GET https://tiles.afm.cibolabs.com/woodychange/2022/11/1879/1193
+
+```bash
+curl -X GET \
+    --output "woody_change_2022_11_1879_1193.png" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -H "Accept: image/png" \
+    "https://tiles.afm.cibolabs.com/woodychange/2022/11/1879/1193"
+```
+
+
 
 ### /legend
 
