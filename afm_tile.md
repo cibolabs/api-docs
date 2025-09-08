@@ -113,6 +113,9 @@ from the `/legend` endpoint for `woodychange` for information on
 which numbers relate to what woody change type and the colours to be
 used.
 
+Note that the first path parameter is a year. Valid years can be 
+retrieved using the `/woodychangeyears` endpoint (below).
+
 GET https://tiles.afm.cibolabs.com/woodychange/2022/11/1879/1193
 
 ```bash
@@ -123,6 +126,20 @@ curl -X GET \
     "https://tiles.afm.cibolabs.com/woodychange/2022/11/1879/1193"
 ```
 
+### /woodychangeyears
+
+Get a list of valid years that can be used with the `/woodychange`
+endpoint
+
+GET https://tiles.afm.cibolabs.com/woodychangeyears
+
+```bash
+curl -X GET \
+    --output "woody_change_years.json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -H "Accept: application/json" \
+    "https://tiles.afm.cibolabs.com/woodychangeyears"
+```
 
 
 ### /legend
