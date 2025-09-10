@@ -20,9 +20,6 @@ For example:
 
 Use this as a trigger to request a new access token.
 
-Important: for security, do not hard-code your credentials into
-scripts, which might leak from code repositories. 
-
 Below is an example of obtaining an access token for calling the Cibolabs API.
 
 The example assumes you’ve set two environment variables,
