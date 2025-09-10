@@ -141,6 +141,37 @@ curl -X GET \
     "https://tiles.afm.cibolabs.com/woodychangeyears"
 ```
 
+### /groundcover
+
+Get an estimate of percentage ground cover for a season. The season is 
+specified by the "yearmonth" (year + month) of the end of the season. The
+list of available yearmonths can be retrieved by calling `/groundcoveryearmonths`
+(below)
+
+GET https://tiles.afm.cibolabs.com/groundcover/209405/1879/1193
+
+```bash
+curl -X GET \
+    --output "woody_change_2022_11_1879_1193.png" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -H "Accept: image/png" \
+    "https://tiles.afm.cibolabs.com/groundcover/209405/1879/1193"
+```
+
+### /groundcoveryearmonths
+
+Get a list of valid yearmonths that can be used with the `/groundcover`
+endpoint.
+
+GET https://tiles.afm.cibolabs.com/groundcoveryearmonths
+
+```bash
+curl -X GET \
+    --output "woody_change_years.json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -H "Accept: application/json" \
+    "https://tiles.afm.cibolabs.com/groundcoveryearmonths"
+```
 
 ### /legend
 
@@ -150,6 +181,8 @@ For example, for the TSDM product, the pasture biomass of red pixels is less
 than 250 kg/ha.
 
 Call the /legend endpoint to return a text version of the colour table.
+
+Specify the name of the product as the first path parameter to this endpoint.
 
 /legend does not support the fractionalcover product.
 Please contact us if you
