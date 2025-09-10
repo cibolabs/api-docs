@@ -27,7 +27,7 @@ Use this as a trigger to request a new access token.
 The example assumes you’ve set two environment variables,
 CIBO_CLIENT_ID and CIBO_CLIENT_SECRET, in your shell session. 
 
-Please see the section on [Security Considerations](login.md#Security Considerations) 
+Please see the section on [Security Considerations](login.md#security-considerations) 
 on keeping these values secure. 
 
 
