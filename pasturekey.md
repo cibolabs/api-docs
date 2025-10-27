@@ -6,6 +6,26 @@ See our
 [online Pasture Key API docs](https://data.pasturekey.cibolabs.com/swagger)
 for the list of endpoints.
 
+## Introduction
+
+The Pasture Key API supports querying of data related to:
+
+1. properties and paddocks
+2. devices and areas of interest (AOIs)
+
+Properties and paddocks are loaded into the system by the frontend. Data is 
+processed by the backend and data for them can be queried in a similar way.
+
+
+Devices and AOIs are analogous to properties and paddocks. However, they do
+not get added by the frontend - they can be dynamically added and removed 
+using the /newdevice, /canceldevice, /adddeviceaoi and /deletedeviceaoi endpoints
+as described below. Once AOIs have been added in this manner the backend will
+process the data required. Note that this meants there will be a delay before
+the data is available to be queried. When querying devices and AOIs, use the 
+device ID as the property ID and the AOI ID as the paddock ID.
+
+
 ## Examples
 
 These examples use the curl program in a linux terminal
@@ -541,6 +561,110 @@ Saving to: ‘order_894.zip’
 order_894.zip                 100%[===============================================>]   1.13M  --.-KB/s    in 0.007s
 2025-05-29 06:47:37 (161 MB/s) - ‘order_894.zip’ saved [1183718/1183718]
 ```
+
+
+### /newdevice
+
+Create a new device and return the device ID. This is a GET request and takes no parameters. The returned
+JSON contains the newly allocated device ID. This device ID can be used with the /adddeviceaoi endpoint
+as described below.
+
+** Request **
+
+```bash
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data-uat.pasturekey.cibolabs.com/newdevice"
+```
+
+** Response **
+
+```json
+{
+    "device_id": "cbcd085f-0865-46d8-b496-ce5c2291943b"
+}
+```
+
+### /adddeviceaoi
+
+Add an AOI to an existing device. The is a GET request and it takes parameters on the endpoint
+path. These parameters describe the AOI its center and radius in decimal degrees. The response 
+is JSON and contains the AOI ID of the newly created AOI.
+
+Once the AOI is added and the backprocessing has completed then data will be able to be
+queried on the device and AOI with the endpoints described above.
+
+** Request **
+
+```bash
+device_id=cbcd085f-0865-46d8-b496-ce5c2291943b
+longitude=144.1
+latitude=-27.1
+radius=0.00001
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data-uat.pasturekey.cibolabs.com/adddeviceaoi/${device_id}/${longitude}/${latitude}/${radius}"
+```
+
+** Response **
+
+```json
+    {
+        "aoi_id": "8531fb3f-3fdd-4f19-a95a-071d9f0b2fc3"
+    }
+```
+
+### /deletedeviceaoi
+
+Delete a device AOI. This is a GET request and takes a single AOI ID as a path parameter.
+Once a call to the endpoint has been made, the data for the AOI will no longer be updated
+by the backend.
+
+```bash
+aoi_id=8531fb3f-3fdd-4f19-a95a-071d9f0b2fc3
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data-uat.pasturekey.cibolabs.com/deletedeviceaoi/${aoi_id}
+```
+
+** Response **
+
+```json
+    {
+    	"message": "AOI 8531fb3f-3fdd-4f19-a95a-071d9f0b2fc3 deleted"
+    }
+```
+
+### /canceldevice
+
+Cancel a device. Any AOIs for the device will no longer be updated by the backend.
+This endpoint takes a single path parameter which is the device ID.
+
+** Request **
+
+```bash
+device_id=cbcd085f-0865-46d8-b496-ce5c2291943b
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data-uat.pasturekey.cibolabs.com/canceldevice/${device_id}
+```
+
+** Response **
+
+```json
+    {
+        "message": "Device cbcd085f-0865-46d8-b496-ce5c2291943b deleted"
+    }
+```
+
 
 ## Chaining
 
