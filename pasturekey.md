@@ -625,17 +625,18 @@ curl -s -X POST \
 
 ### /deletedeviceaoi
 
-Delete a device AOI. This is a POST request and takes a single AOI ID as a path parameter.
+Delete a device AOI. This is a POST request and takes the device ID and  AOI ID as a path parameters.
 Once a call to the endpoint has been made, the data for the AOI will no longer be updated
 by the backend.
 
 ```bash
+device_id=cbcd085f-0865-46d8-b496-ce5c2291943b
 aoi_id=8531fb3f-3fdd-4f19-a95a-071d9f0b2fc3
 curl -s -X POST \
     --output data.json \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${TOKEN}" \
-    "https://data.pasturekey.cibolabs.com/deletedeviceaoi/${aoi_id}"
+    "https://data.pasturekey.cibolabs.com/deletedeviceaoi/${device_id}/${aoi_id}"
 ```
 
 ** Response **
@@ -702,7 +703,7 @@ curl -s -X POST \
     --output data.json \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${TOKEN}" \
-    "https://data.pasturekey.cibolabs.com/deletedeviceaoi/${aoi_id}"
+    "https://data.pasturekey.cibolabs.com/deletedeviceaoi/${device_id}/${aoi_id}"
 
 # and the device
 curl -s -X POST \
