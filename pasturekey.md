@@ -595,8 +595,8 @@ curl -s -X POST \
 ### /adddevicepointaoi
 
 Add an AOI to an existing device. The is a POST request and it takes parameters on the endpoint
-path. These parameters describe the AOI its center and radius in decimal degrees. The response 
-is JSON and contains the AOI ID of the newly created AOI.
+path. These parameters describe the AOI its center (given as longitude and latitude in decimal degrees) and radius 
+in metres. The response is JSON and contains the AOI ID of the newly created AOI.
 
 Once the AOI is added and the backprocessing has completed then data will be able to be
 queried on the device and AOI with the endpoints described above.
@@ -607,7 +607,7 @@ queried on the device and AOI with the endpoints described above.
 device_id=cbcd085f-0865-46d8-b496-ce5c2291943b
 longitude=144.1
 latitude=-27.1
-radius=0.00001
+radius=200
 curl -s -X POST \
     --output data.json \
     -H "Content-Type: application/json" \
@@ -688,7 +688,7 @@ curl -s -X POST \
 device_id=`cat newdevice.json | jq -r '.device_id'`
 longitude=144.1
 latitude=-27.1
-radius=0.00001
+radius=200
 curl -s -X POST \
     --output newaoi.json \
     -H "Content-Type: application/json" \
