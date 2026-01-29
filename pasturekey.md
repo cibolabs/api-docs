@@ -28,7 +28,7 @@ specifying the property ID and optional paddock IDs. See the examples below.
 
 A Pasture Key device is associated with one or more areas of interest (AOI).
 A device and its AOIs are created (and deleted) using the device endpoints.
-See the device examples below.
+See the examples below.
 
 After AOIs have been added, the backend processes the imagery.
 There will be a delay before the data is available to be queried.
@@ -269,14 +269,85 @@ See also:
 - /gettsdmstats
 - /gettsdmdeadstats
 
+**Request**
+
+POST https://data.pasturekey.cibolabs.com/gettsdmgreenstats/e354f641-fce2-4299-a7d4-561dc31597d2?startdate=20251001&enddate=20251031
+
+```bash
+farmid="e354f641-fce2-4299-a7d4-561dc31597d2"
+startdate="20251001"
+enddate="20251031"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.pasturekey.cibolabs.com/gettsdmgreenstats/${farmid}?startdate=${startdate}&enddate=${enddate}"
+```
+
+**Response**
+
+@TODO: add change_rate if we add it. Otherwise, add a notes section
+at the bottom, which states the change_rate is not provided for green tsdm.
+
+```json
+{
+  "property_id": "e354f641-fce2-4299-a7d4-561dc31597d2",
+  "paddocks": [
+    {
+      "paddock_id": "4c4f1966-7436-4ac1-88c2-8cc8f46969c3",
+      "area_ha": 37.10996870337056,
+      "paddock_name": "unknown",
+      "stats": [
+        {
+          "measure": "tsdmgreen",
+          "unit": "kg/ha",
+          "dates": [
+            "20251003",
+            "20251008",
+            ...
+          ],
+          "median": [
+            1094,
+            1053,
+            ...
+          ],
+          "foo": [
+            40598.3057614874,
+            39076.7970446492,
+            ...
+          ],
+        }
+      ]
+    },
+    {
+      "paddock_id": "b6ad9142-b6b9-4c54-98f7-08a9631961cb",
+      "area_ha": 0.012428353981807513,
+      ...
+    }
+  ]
+}
+```
+
+@TODO: Remove these change_rate if we do not add it.
+
+Notes:
+- change rate is only provided for the tsdm measure
+
+
 ### /gettsdmdeadstats
 
 Get paddock statistics for dead pasture biomass measured as that component of
 Total Standing Dry Matter (TSDM) attributed to dead vegetation.
 
+Refer to /gettsdmgreenstats.
+
 See also:
 - /gettsdmstats
-- /gettsdmgreenstats
+
+
+### /getfcstats
+
+@TODO: Add getfcstats example.
 
 
 ### /geojson
@@ -702,7 +773,7 @@ curl -s -X POST \
     }
 ```
 
-## Device examples
+## Device workflow example
 
 Below is a worked example for the device endpoints. It creates a new device and AOI then deletes them.
 
