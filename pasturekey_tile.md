@@ -34,9 +34,9 @@ GET https://tiles.pasturekey.cibolabs.com/getimagedates/434b1601-200d-428c-9c6d-
 
 ```bash
 PROPERTY_ID="434b1601-200d-428c-9c6d-1446b05ecc3b"
-curl -s -X GET \ 
-    --output data.json \ 
-    -H "Content-Type: application/json" \ 
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${TOKEN}" \
     "https://tiles.pasturekey.cibolabs.com/getimagedates/${PROPERTY_ID}"
 ```
