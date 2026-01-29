@@ -13,22 +13,29 @@ The Pasture Key API supports two Pasture Key related services:
 1. Pasture Key properties
 2. Pasture Key Devices
 
-** Pasture Key properties **
+### Pasture Key properties
 
-A Pasture Key property is associated with one or more paddocks. Users create their property and map their paddocks using the the Cibolabs application (the frontend).
+A Pasture Key property is associated with one or more paddocks.
+Users create their property and map their paddocks using the
+Cibolabs application (the frontend).
 
 The backend processes satellite imagery for the property's paddocks.
 
-A property's data is retrievable via the pasturekey endpoints by specifying the property ID and optional paddock IDs. See the examples below.
+A property's data is retrieved using the pasturekey API endpoints,
+specifying the property ID and optional paddock IDs. See the examples below.
 
-** Pasture Key devices **
+### Pasture Key devices
 
-A Pasture Key device is associated with one or more areas of interest (AOIs). A device and its AOIs are created (and deleted) using the device endpoints. See the device examples below.
+A Pasture Key device is associated with one or more areas of interest (AOI).
+A device and its AOIs are created (and deleted) using the device endpoints.
+See the device examples below.
 
-Once AOIs have been added in this manner the backend will process the imagery.
+After AOIs have been added, the backend processes the imagery.
 There will be a delay before the data is available to be queried.
 
-A device's data is retrievable using the pasture key endpoints. When using these endpoints for a device, specify the device ID (instead of the property ID) and optional AOI IDs (instead of paddock IDs).
+A device's data is retrieved using the pasture key endpoints.
+When using these endpoints for a device, specify the device ID
+(instead of the property ID) and optional AOI IDs (instead of paddock IDs).
 
 
 ## Examples
@@ -185,6 +192,10 @@ curl -s -X POST \
 Get paddock statistics for pasture biomass measured as
 Total Standing Dry Matter (TSDM).
 
+See also:
+- /gettsdmgreenstats
+- /gettsdmdeadstats
+
 **Request**
 
 POST https://data.pasturekey.cibolabs.com/gettsdmstats/e354f641-fce2-4299-a7d4-561dc31597d2?startdate=20250501&enddate=20250525
@@ -247,6 +258,25 @@ Notes:
 - median_error is the expected variation in the median estimate
 - Foo (feed on offer) in kg, calculated as the median * area_ha 
 - change rate is measured in kg / ha / day
+
+
+### /gettsdmgreenstats
+
+Get paddock statistics for green pasture biomass measured as that component of
+Total Standing Dry Matter (TSDM) attributed to green vegetation.
+
+See also:
+- /gettsdmstats
+- /gettsdmdeadstats
+
+### /gettsdmdeadstats
+
+Get paddock statistics for dead pasture biomass measured as that component of
+Total Standing Dry Matter (TSDM) attributed to dead vegetation.
+
+See also:
+- /gettsdmstats
+- /gettsdmgreenstats
 
 
 ### /geojson
