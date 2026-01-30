@@ -301,21 +301,10 @@ at the bottom, which states the change_rate is not provided for green tsdm.
         {
           "measure": "tsdmgreen",
           "unit": "kg/ha",
-          "dates": [
-            "20251003",
-            "20251008",
-            ...
-          ],
-          "median": [
-            1094,
-            1053,
-            ...
-          ],
-          "foo": [
-            40598.3057614874,
-            39076.7970446492,
-            ...
-          ],
+          "dates": ["20251003", "20251008", ...],
+          "median": [1094, 1053, ...],
+          "foo": [40598.3057614874, 39076.7970446492, ...],
+          "captured": [100, 92, ...]
         }
       ]
     },
@@ -328,7 +317,7 @@ at the bottom, which states the change_rate is not provided for green tsdm.
 }
 ```
 
-@TODO: Remove these change_rate if we do not add it.
+@TODO: Remove this change_rate note if we add it.
 
 Notes:
 - change rate is only provided for the tsdm measure
@@ -347,8 +336,74 @@ See also:
 
 ### /getfcstats
 
-@TODO: Add getfcstats example.
+Get fractional cover (FC) statistics for paddocks.
+Fractional cover is the percentage of the paddock covered by green vegetation,
+dead vegetation and bare ground.
 
+**Request**
+
+POST https://data.pasturekey.cibolabs.com/getfcstats/e354f641-fce2-4299-a7d4-561dc31597d2?startdate=20251001&enddate=20251031
+
+```bash
+farmid="e354f641-fce2-4299-a7d4-561dc31597d2"
+startdate="20251001"
+enddate="20251031"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.pasturekey.cibolabs.com/getfcstats/${farmid}?startdate=${startdate}&enddate=${enddate}"
+```
+
+**Response**
+
+```json
+{
+  "property_id": "e354f641-fce2-4299-a7d4-561dc31597d2",
+  "paddocks": [
+    {
+      "paddock_id": "4c4f1966-7436-4ac1-88c2-8cc8f46969c3",
+      "area_ha": 37.10996870337056,
+      "paddock_name": "unknown",
+      "stats": [
+        {
+          "measure": "fcgreen",
+          "unit": "%",
+          "dates": ["20251003", "20251008", ...],
+          "median": [20, 17, ...],
+          "captured": [100, 92, ...]
+        },
+        {
+          "measure": "fcdead",
+          "unit": "%",
+          "dates": ["20251003", "20251008", ...],
+          "median": [62, 62, ...],
+          "captured": [100, 92, ...]
+        },
+        {
+          "measure": "fcbare",
+          "unit": "%",
+          "dates": ["20251003", "20251008", ...],
+          "median": [18, 21, ...],
+          "captured": [100, 92, ...]
+        }
+      ],
+    },
+    {
+      "paddock_id": "b6ad9142-b6b9-4c54-98f7-08a9631961cb",
+      ...
+    }
+  ]
+}
+```
+
+@TODO: remove this change rate note if we add it.
+
+Notes:
+- three statistics objects are added to the response, one each for
+  the green, dead and bare fractions
+- error estimates are not provided for fractional cover statistics
+- change rate is not provided for fractional cover statistics
 
 ### /geojson
 
