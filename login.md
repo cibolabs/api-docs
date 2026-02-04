@@ -32,10 +32,10 @@ CREDENTIALS=$(printf "%s:%s" "$CIBO_CLIENT_ID" "$CIBO_CLIENT_SECRET" | base64 -w
 
 # Exchange your credentials for an access token  
 
-TOKEN=$(curl -s -X POST \ 
-    -H "Content-Type: application/x-www-form-urlencoded" \ 
-    -H "Authorization: Basic ${CREDENTIALS}" \ 
-    -d "grant_type=client_credentials" \ 
+TOKEN=$(curl -s -X POST \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -H "Authorization: Basic ${CREDENTIALS}" \
+    -d "grant_type=client_credentials" \
     "https://login.cibolabs.com/oauth2/token" \
     | jq -r '.access_token') 
 

@@ -21,10 +21,10 @@ to send requests to the API. They assume:
 GET https://data.afm.cibolabs.com/getimagedates 
 
 ```bash
-curl -s -X GET \ 
-    --output data.json \ 
-    -H "Content-Type: application/json" \ 
-    -H "Authorization: Bearer ${TOKEN}" \ 
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
     "https://data.afm.cibolabs.com/getimagedates
 ```
 
@@ -56,12 +56,11 @@ geojson=$(cat "$geojson_file")
 startdate="20240101" 
 enddate="20251231" 
 percentiles="5,95"
- 
-curl -s -X POST \ 
-    --output data.json \ 
-    -H "Content-Type: application/json" \ 
-    -H "Authorization: Bearer ${TOKEN}" \ 
-    -d "$geojson" \ 
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$geojson" \
     "https://data.afm.cibolabs.com/gettsdmstats?startdate=$startdate&enddate=$enddate&percentiles=$percentiles" 
 ```
 
@@ -146,11 +145,11 @@ startdate="20250101"
 enddate="20250430"
 percentiles="5,95"
 
-curl -s -X POST \ 
-    --output data.json \ 
-    -H "Content-Type: application/json" \ 
-    -H "Authorization: Bearer ${TOKEN}" \ 
-    -d "$geojson" \ 
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$geojson" \
     "https://data.afm.cibolabs.com/gettsdmstats?startdate=$startdate&enddate=$enddate&percentiles=$percentiles" 
 ```
 
@@ -279,12 +278,12 @@ POST https://data.afm.cibolabs.com/gettsdmthumbail
 geojson_file="your_area_of_interest.geojson"
 geojson=$(cat "$geojson_file")
 
-curl -s -X POST \ 
-    --output data.json \ 
-    -H "Content-Type: application/json" \ 
-    -H "Authorization: Bearer ${TOKEN}" \ 
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
     -H "Accept: image/png" \
-    -d "$geojson" \ 
+    -d "$geojson" \
     "https://data.afm.cibolabs.com/gettsdmthumbail" 
 ```
 

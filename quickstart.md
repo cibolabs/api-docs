@@ -38,12 +38,12 @@ CREDENTIALS=$(printf "%s:%s" "$CIBO_CLIENT_ID" "$CIBO_CLIENT_SECRET" | base64 -w
 
 # Exchange your credentials for an access token  
 
-TOKEN=$(curl -s -X POST \ 
-    -H "Content-Type: application/x-www-form-urlencoded" \ 
-    -H "Authorization: Basic ${CREDENTIALS}" \ 
-    -d "grant_type=client_credentials" \ 
+TOKEN=$(curl -s -X POST \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -H "Authorization: Basic ${CREDENTIALS}" \
+    -d "grant_type=client_credentials" \
     "https://login.cibolabs.com/oauth2/token" \
-    | jq -r '.access_token') 
+    | jq -r '.access_token')
 
 ``` 
 
@@ -55,10 +55,10 @@ If successful, the `TOKEN` variable holds the access token.
 Here, we make a request to the AFM API's `/getimagedates` endpoint. If successful, `data.json` will contain the dates for the available images. You’ll need the `TOKEN` variable created above. 
 
 ```bash
-curl -s -X GET \ 
-    --output data.json \ 
-    -H "Content-Type: application/json" \ 
-    -H "Authorization: Bearer ${TOKEN}" \ 
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
     https://data.afm.cibolabs.com/getimagedates 
 ```
 
@@ -86,11 +86,11 @@ geojson_file="postcode_2830_g0.geojson"
 geojson=$(cat "$geojson_file")  
 
 # Request data 
-curl -s -X POST \ 
-    --output tsdmstats.geojson \ 
-    -H "Content-Type: application/json" \ 
-    -H "Authorization: Bearer ${TOKEN}" \ 
-    -d "$geojson" \ 
+curl -s -X POST \
+    --output tsdmstats.geojson \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$geojson" \
     "https://data.afm.cibolabs.com/gettsdmstats?startdate=20240201&enddate=20241231&percentiles=10,25,50,75,90" 
 ```
 

@@ -13,22 +13,29 @@ The Pasture Key API supports two Pasture Key related services:
 1. Pasture Key properties
 2. Pasture Key Devices
 
-** Pasture Key properties **
+### Pasture Key properties
 
-A Pasture Key property is associated with one or more paddocks. Users create their property and map their paddocks using the the Cibolabs application (the frontend).
+A Pasture Key property is associated with one or more paddocks.
+Users create their property and map their paddocks using the
+Cibolabs application (the frontend).
 
 The backend processes satellite imagery for the property's paddocks.
 
-A property's data is retrievable via the pasturekey endpoints by specifying the property ID and optional paddock IDs. See the examples below.
+A property's data is retrieved using the pasturekey API endpoints,
+specifying the property ID and optional paddock IDs. See the examples below.
 
-** Pasture Key devices **
+### Pasture Key devices
 
-A Pasture Key device is associated with one or more areas of interest (AOIs). A device and its AOIs are created (and deleted) using the device endpoints. See the device examples below.
+A Pasture Key device is associated with one or more areas of interest (AOI).
+A device and its AOIs are created (and deleted) using the device endpoints.
+See the examples below.
 
-Once AOIs have been added in this manner the backend will process the imagery.
+After AOIs have been added, the backend processes the imagery.
 There will be a delay before the data is available to be queried.
 
-A device's data is retrievable using the pasture key endpoints. When using these endpoints for a device, specify the device ID (instead of the property ID) and optional AOI IDs (instead of paddock IDs).
+A device's data is retrieved using the pasture key endpoints.
+When using these endpoints for a device, specify the device ID
+(instead of the property ID) and optional AOI IDs (instead of paddock IDs).
 
 
 ## Examples
@@ -185,6 +192,10 @@ curl -s -X POST \
 Get paddock statistics for pasture biomass measured as
 Total Standing Dry Matter (TSDM).
 
+See also:
+- /gettsdmgreenstats
+- /gettsdmdeadstats
+
 **Request**
 
 POST https://data.pasturekey.cibolabs.com/gettsdmstats/e354f641-fce2-4299-a7d4-561dc31597d2?startdate=20250501&enddate=20250525
@@ -248,6 +259,146 @@ Notes:
 - Foo (feed on offer) in kg, calculated as the median * area_ha 
 - change rate is measured in kg / ha / day
 
+
+### /gettsdmgreenstats
+
+Get paddock statistics for green pasture biomass measured as that component of
+Total Standing Dry Matter (TSDM) attributed to green vegetation.
+
+See also:
+- /gettsdmstats
+- /gettsdmdeadstats
+
+**Request**
+
+POST https://data.pasturekey.cibolabs.com/gettsdmgreenstats/e354f641-fce2-4299-a7d4-561dc31597d2?startdate=20251001&enddate=20251031
+
+```bash
+farmid="e354f641-fce2-4299-a7d4-561dc31597d2"
+startdate="20251001"
+enddate="20251031"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.pasturekey.cibolabs.com/gettsdmgreenstats/${farmid}?startdate=${startdate}&enddate=${enddate}"
+```
+
+**Response**
+
+
+```json
+{
+  "property_id": "e354f641-fce2-4299-a7d4-561dc31597d2",
+  "paddocks": [
+    {
+      "paddock_id": "4c4f1966-7436-4ac1-88c2-8cc8f46969c3",
+      "area_ha": 37.10996870337056,
+      "paddock_name": "unknown",
+      "stats": [
+        {
+          "measure": "tsdmgreen",
+          "unit": "kg/ha",
+          "dates": ["20251003", "20251008", ...],
+          "median": [1094, 1053, ...],
+          "foo": [40598.3057614874, 39076.7970446492, ...],
+          "captured": [100, 92, ...]
+        }
+      ]
+    },
+    {
+      "paddock_id": "b6ad9142-b6b9-4c54-98f7-08a9631961cb",
+      "area_ha": 0.012428353981807513,
+      ...
+    }
+  ]
+}
+```
+
+Notes:
+- change rate is only provided for the tsdm measure
+- we don't estimate an error for this metric
+
+
+### /gettsdmdeadstats
+
+Get paddock statistics for dead pasture biomass measured as that component of
+Total Standing Dry Matter (TSDM) attributed to dead vegetation.
+
+Refer to /gettsdmgreenstats.
+
+See also:
+- /gettsdmstats
+
+
+### /getfcstats
+
+Get fractional cover (FC) statistics for paddocks.
+Fractional cover is the percentage of the paddock covered by green vegetation,
+dead vegetation and bare ground.
+
+**Request**
+
+POST https://data.pasturekey.cibolabs.com/getfcstats/e354f641-fce2-4299-a7d4-561dc31597d2?startdate=20251001&enddate=20251031
+
+```bash
+farmid="e354f641-fce2-4299-a7d4-561dc31597d2"
+startdate="20251001"
+enddate="20251031"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.pasturekey.cibolabs.com/getfcstats/${farmid}?startdate=${startdate}&enddate=${enddate}"
+```
+
+**Response**
+
+```json
+{
+  "property_id": "e354f641-fce2-4299-a7d4-561dc31597d2",
+  "paddocks": [
+    {
+      "paddock_id": "4c4f1966-7436-4ac1-88c2-8cc8f46969c3",
+      "area_ha": 37.10996870337056,
+      "paddock_name": "unknown",
+      "stats": [
+        {
+          "measure": "fcgreen",
+          "unit": "%",
+          "dates": ["20251003", "20251008", ...],
+          "median": [20, 17, ...],
+          "captured": [100, 92, ...]
+        },
+        {
+          "measure": "fcdead",
+          "unit": "%",
+          "dates": ["20251003", "20251008", ...],
+          "median": [62, 62, ...],
+          "captured": [100, 92, ...]
+        },
+        {
+          "measure": "fcbare",
+          "unit": "%",
+          "dates": ["20251003", "20251008", ...],
+          "median": [18, 21, ...],
+          "captured": [100, 92, ...]
+        }
+      ],
+    },
+    {
+      "paddock_id": "b6ad9142-b6b9-4c54-98f7-08a9631961cb",
+      ...
+    }
+  ]
+}
+```
+
+Notes:
+- three statistics objects are added to the response, one each for
+  the green, dead and bare fractions
+- error estimates are not provided for fractional cover statistics
+- change rate is not provided for fractional cover statistics
 
 ### /geojson
 
@@ -672,7 +823,7 @@ curl -s -X POST \
     }
 ```
 
-## Device examples
+## Device workflow example
 
 Below is a worked example for the device endpoints. It creates a new device and AOI then deletes them.
 
@@ -723,7 +874,7 @@ geometry.
 The result of `/gettsdmstats` can be passed back into `/gettsdmstats` to attach statistics
 for further paddocks.
 
-### Chaining example
+### Chaining example 1
 
 In this example, we chain 2 calls together:
 
@@ -746,7 +897,7 @@ POST https://data.pasturekey.cibolabs.com/geom/340dec85-ac4b-422d-beec-a7304b596
 
 In detail:
 
-```
+```bash
 property_id=340dec85-ac4b-422d-beec-a7304b596fb3
 
 # First call to /gettsdmstats
@@ -888,12 +1039,207 @@ statistics from /gettsdmstats which were generated by the first call:
 
 ```
 
+### Chaining example 2
+
+In this example, we chain 3 calls together:
+- /gettsdmstats
+- /gettsdmgreenstats
+- /getfcstats
+
+/gettsdmstats takes a property_id and optional start/end dates and returns
+a JSON object with a list of paddocks and their statistics.
+
+We then pass the output to the /gettsdmgreenstats endpoint. It inserts
+a tsdmgreen stats object into the stats list for each paddock, and returns
+the updated JSON.
+
+We then pass the output to the /getfcstats endpoint. It inserts
+three fc stats objects (fcgreen, fcdead, fcbare) into the stats list
+for each paddock, and returns the updated JSON.
+
+Summary of requests:
+
+```
+POST https://data.pasturekey.cibolabs.com/gettsdmstats/e354f641-fce2-4299-a7d4-561dc31597d2?startdate=20251001&enddate=20251031
+
+POST https://data.pasturekey.cibolabs.com/gettsdmgreenstats/e354f641-fce2-4299-a7d4-561dc31597d2?startdate=20251001&enddate=20251031
+
+POST https://data.pasturekey.cibolabs.com/getfcstats/e354f641-fce2-4299-a7d4-561dc31597d2?startdate=20251001&enddate=20251031
+```
+
+In detail:
+
+```bash
+property_id=e354f641-fce2-4299-a7d4-561dc31597d2
+startdate=20251001
+enddate=20251031
+
+# First call to /gettsdmstats
+curl -s -X POST -o output_1.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+     https://data.pasturekey.cibolabs.com/gettsdmstats/${property_id}?startdate=${startdate}&enddate=${enddate}
+
+# Second call to /gettsdmgreenstats
+curl -s -X POST -o output_2.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d @output_1.json \
+    https://data.pasturekey.cibolabs.com/gettsdmgreenstats/${property_id}?startdate=${startdate}&enddate=${enddate}
+
+# Third call to /getfcstats
+curl -s -X POST -o output_3.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d @output_2.json \
+    https://data.pasturekey.cibolabs.com/getfcstats/${property_id}?startdate=${startdate}&enddate=${enddate}
+
+```
+
+The final output, output_3.json, contains the requested stats for the paddocks:
+
+```json
+{
+  "property_id": "e354f641-fce2-4299-a7d4-561dc31597d2",
+  "paddocks": [
+    {
+      "paddock_id": "4c4f1966-7436-4ac1-88c2-8cc8f46969c3",
+      "paddock_name": "unknown",
+      "stats": [
+        {
+          "measure": "tsdm",
+          "unit": "kg/ha",
+          "dates": [
+            "20251003",
+            "20251008",
+            "20251013",
+            "20251015",
+            "20251018",
+            "20251023",
+            "20251028"
+          ],
+          "median": [
+            1094,
+            1053,
+            1031,
+            1064,
+            1006,
+            null,
+            null
+          ],
+          ...
+        },
+        {
+          "measure": "tsdmgreen",
+          "unit": "kg/ha",
+          "dates": [
+            "20251003",
+            "20251008",
+            "20251013",
+            "20251015",
+            "20251018",
+            "20251023",
+            "20251028"
+          ],
+          "median": [
+            257,
+            227,
+            209,
+            205,
+            193,
+            null,
+            null
+          ],
+          ...
+        },
+        {
+          "measure": "fcgreen",
+          "unit": "%",
+          "dates": [
+            "20251003",
+            "20251008",
+            "20251013",
+            "20251015",
+            "20251018",
+            "20251023",
+            "20251028"
+          ],
+          "median": [
+            62,
+            17,
+            16,
+            15,
+            15,
+            null,
+            null
+          ],
+          ...
+        },
+        {
+          "measure": "fcdead",
+          "unit": "%",
+          "dates": [
+            "20251003",
+            "20251008",
+            "20251013",
+            "20251015",
+            "20251018",
+            "20251023",
+            "20251028"
+          ],
+          "median": [
+            62,
+            17,
+            16,
+            15,
+            15,
+            null,
+            null
+          ],
+          ...
+        },
+        {
+          "measure": "fcbare",
+          "unit": "%",
+          "dates": [
+            "20251003",
+            "20251008",
+            "20251013",
+            "20251015",
+            "20251018",
+            "20251023",
+            "20251028"
+          ],
+          "median": [
+            0,
+            66,
+            68,
+            70,
+            70,
+            null,
+            null
+          ],
+          ...
+        }
+      ]
+    },
+    {
+      ...
+    }
+  ]
+}
+```
+
+
 ### Valid chaining sequences
 
-The following chain of calls is supported:
+The following chain of calls are supported:
 
-- passing the result of /gettsdmstats back to /gettsdmstats
-- passing the result of /gettsdmstats to /geom
+- passing the result of /gettsdmstats, /gettsdmgreenstats, /gettsdmdeadstats,
+  or /getfcstats to /gettsdmstats, /gettsdmgreenstats, /gettsdmdeadstats,
+  or /getfcstats
+- passing the result of /gettsdmstats, /gettsdmgreenstats, /gettsdmdeadstats or
+  /getfcstats to /geom
 - passing the result of /getpaddockinfo to /geom
 
 ## Handling special cases
@@ -901,8 +1247,7 @@ The following chain of calls is supported:
 ### Handling the response time-out limit of 30 seconds
 
 The API has a time-out period of 30 seconds. You may need to shorten the
-time-period (`startdate` and `enddate` parametersof /gettsdmstats) of your request, and
-make multiple calls to the API.
+time-period of your request and make multiple calls to the API.
 
 If you wish, you may chain the requests with different start and end dates.
 A new stats object for the second request is appended to the stats
