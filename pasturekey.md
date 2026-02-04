@@ -897,7 +897,7 @@ POST https://data.pasturekey.cibolabs.com/geom/340dec85-ac4b-422d-beec-a7304b596
 
 In detail:
 
-```
+```bash
 property_id=340dec85-ac4b-422d-beec-a7304b596fb3
 
 # First call to /gettsdmstats
@@ -1078,14 +1078,16 @@ enddate=20251031
 curl -s -X POST -o output_1.json \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${TOKEN}" \
-     https://data.pasturekey.cibolabs.com/gettsdmstats/${property_id}?startdate=${startdate}&enddate=${enddate}     
-     
+     https://data.pasturekey.cibolabs.com/gettsdmstats/${property_id}?startdate=${startdate}&enddate=${enddate}
+
+# Second call to /gettsdmgreenstats
 curl -s -X POST -o output_2.json \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${TOKEN}" \
     -d @output_1.json \
     https://data.pasturekey.cibolabs.com/gettsdmgreenstats/${property_id}?startdate=${startdate}&enddate=${enddate}
 
+# Third call to /getfcstats
 curl -s -X POST -o output_3.json \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${TOKEN}" \
