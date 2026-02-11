@@ -141,7 +141,7 @@ Get the most recent paddock geometries for the farm, attributed with the Cibolab
 
 **Request**
 
-POST https://data.pkey.cibolabs.com/geom/e354f641-fce2-4299-a7d4-561dc31597d2
+POST https://data.pasturekey.cibolabs.com/geom/e354f641-fce2-4299-a7d4-561dc31597d2
 
 ```bash
 farmid="e354f641-fce2-4299-a7d4-561dc31597d2"
@@ -149,7 +149,7 @@ curl -s -X POST \
     --output data.json \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${TOKEN}" \
-    "https://data.pkey.cibolabs.com/geom/${farmid}"
+    "https://data.pasturekey.cibolabs.com/geom/${farmid}"
 ```
 
 **Response**
@@ -594,7 +594,7 @@ Note the expiry time in the URL.
 GET https://data.pasturekey.cibolabs.com/downloaddata/20250521/e354f641-fce2-4299-a7d4-561dc31597d2?product=nbar&product=tsdm 
 
 ```bash
-imagedate="20250210"
+imagedate="20250521"
 farmid="e354f641-fce2-4299-a7d4-561dc31597d2"
 product1="nbar"
 product2="tsdm"
