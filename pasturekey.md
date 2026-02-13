@@ -855,7 +855,7 @@ curl -s -X POST \
 
 #### /geojson
 
-> ⚠️ Deprecated and replaced with /snapshot.
+> ⚠️ Deprecated and replaced with /snapshot. See migration guide below.
 
 Get a map (geojson) of the farm, attributed with key statistics
 for the requested date.
@@ -963,8 +963,53 @@ Notes:
 - Legend is a colour table; it can be used to style returned geojson if
   you wish by linking it with the estimated_median_tsdm field
   (the legend attribute is a geojson foreign member:
-  https://www.rfc-editor.org/rfc/rfc7946#section-6.1) 
+  https://www.rfc-editor.org/rfc/rfc7946#section-6.1)
 
+
+**Migration guide from /geojson to /snapshot**
+
+The /snapshot endpoint is a more flexible and extensible replacement for the
+/geojson endpoint. The structure of the stats objects returned by /snapshot
+are consistent with those returned from the statistics endpoints
+such as /gettsdmstats.
+
+
+/geojson attribute | /snapshot attribute
+------------------|-----------------
+property_id | property_id
+paddock_id | 'properties' paddock_id
+paddock_name | 'properties' paddock_name
+centroid | 'properties' centroid
+paddock_area_ha | 'properties' paddock_area_ha
+capture_date | 'tsdm' stats: dates[0]
+percent_captured | 'tsdm' stats: captured[0]
+estimated_median_tsdm | 'tsdm' stats: median[0]
+estimated_median_tsdm_error | 'tsdm' stats: median_error[0]
+estimated_foo | 'tsdm' stats: foo[0]
+estimated_tsdm_change_rate | 'tsdm' stats: change_rate[0]
+trend | 'tsdm' stats: trend
+raw_median_tsdm | 'tsdm' stats: captured_median[0]
+raw_foo | 'tsdm' stats: captured_foo[0]
+estimated_median_tsdmgreen | 'tsdmgreen' stats: median[0]
+estimated_foo_green | 'tsdmgreen' stats: foo[0]
+estimated_tsdmgreen_change_rate | 'tsdmgreen' stats: change_rate[0]
+trend_tsdmgreen | 'tsdmgreen' stats: trend
+estimated_median_tsdmdead | 'tsdmdead' stats: median[0]
+estimated_foo_dead | 'tsdmdead' stats: foo[0]
+estimated_tsdmdead_change_rate | 'tsdmdead' stats: change_rate[0]
+trend_tsdmdead | 'tsdmdead' stats: trend
+capture_date_fc | 'fcgreen' stats: dates[0]
+percent_captured_fc | 'fcgreen' stats: captured[0]
+fcgreen_median | 'fcgreen' stats: median[0]
+fcgreen_change_rate | 'fcgreen' stats: change_rate[0]
+fcgreen_trend | 'fcgreen' stats: trend
+fcdead_median | 'fcdead' stats: median[0]
+fcdead_change_rate | 'fcdead' stats: change_rate[0]
+fcdead_trend | 'fcdead' stats: trend
+fcbare_median | 'fcbare' stats: median[0]
+fcbare_change_rate | 'fcbare' stats: change_rate[0]
+fcbare_trend | 'fcbare' stats: trend
+integration_id | Deprecated
 
 ## Device workflow example
 
