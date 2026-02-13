@@ -41,6 +41,8 @@ When using these endpoints for a device, specify the device ID
 
 Date | Change | endpoints
 ---- | ------ | --------
+2026-02-13 | Added centroid attribute to features properties | /geom, /snapshot
+2026-02-13 | Improved response times of the /snapshot endpoint, especially for large properties | /snapshot
 2026-02-11 | Bug fix: /snapshot now correctly returns nearest, prior date when data not available for given date | /snapshot
 2026-02-09 | Added the change_rate attribute to response of several endpoints | /snapshot, /gettsdmgreenstats, /gettsdmdeadstats, /getfcstats
 2026-02-06 | Added tsdmgreen, tsdmdead, and fc stats to response of /snapshot endpoint | /snapshot
@@ -164,7 +166,8 @@ curl -s -X POST \
       "properties": {
         "paddock_id": "4c4f1966-7436-4ac1-88c2-8cc8f46969c3",
         "paddock_name": "charlies lane",
-        "area_ha": 37.11
+        "area_ha": 37.11,
+        "centroid": "149.81772,-26.76692"
       },
       "geometry": {
         "type": "Polygon",
@@ -214,6 +217,7 @@ curl -s -X GET \
         "paddock_id": "4c4f1966-7436-4ac1-88c2-8cc8f46969c3",
         "paddock_name": "charlies lane",
         "area_ha": 326,
+        "centroid": "149.81772,-26.76692",
         "stats": [
           {
             "measure": "tsdm",
@@ -851,7 +855,7 @@ curl -s -X POST \
 
 #### /geojson
 
-> ⚠️ Deprecated and replaced with /snapshot.
+> ⚠️ Deprecated and replaced with /snapshot. See migration guide below.
 
 Get a map (geojson) of the farm, attributed with key statistics
 for the requested date.
@@ -878,26 +882,46 @@ curl -s -X GET \
 ```json
 {
   "type": "FeatureCollection",
-  "name": "e354f641-fce2-4299-a7d4-561dc31597d2_20250210",
+  "name": "name": "340dec85-ac4b-422d-beec-a7304b596fb3_2025-09-30",
   "features": [
     {
       "type": "Feature",
       "properties": {
-        "centroid": "149.81772,-26.76692",
-        "property_name": "e354f641-fce2-4299-a7d4-561dc31597d2",
-        "paddock_name": "charlies lane",
-        "property_id": "e354f641-fce2-4299-a7d4-561dc31597d2",
-        "paddock_id": "4c4f1966-7436-4ac1-88c2-8cc8f46969c3",
-        "paddock_area_ha": 37.11,
-        "capture_date": "20250210",
+        "paddock_id": "82dc9b7f-3ba5-42eb-b517-842798975385",
+        "paddock_name": "unknown",
+        "centroid": "148.963421,-32.978768",
+        "property_id": "340dec85-ac4b-422d-beec-a7304b596fb3",
+        "property_name": "340dec85-ac4b-422d-beec-a7304b596fb3",
+        "integration_id": "TBD",
+        "paddock_area_ha": 10.3534,
+        "capture_date": "20250930",
         "percent_captured": 100,
-        "estimated_median_tsdm": 1242,
-        "estimated_median_tsdm_error": 114,
-        "estimated_foo": 46090,
-        "estimated_tsdm_change_rate": -10,
-        "trend": "Decreasing",
-        "raw_median_tsdm": 1225,
-        "raw_foo": 45459
+        "estimated_median_tsdm": 1200,
+        "estimated_median_tsdm_error": 156,
+        "estimated_foo": 12424,
+        "estimated_tsdm_change_rate": 22,
+        "trend": "Increasing",
+        "raw_median_tsdm": 729,
+        "raw_foo": 7547,
+        "estimated_median_tsdmgreen": 1073,
+        "estimated_foo_green": 11109,
+        "estimated_tsdmgreen_change_rate": 25,
+        "trend_tsdmgreen": "Increasing",
+        "estimated_median_tsdmdead": 127,
+        "estimated_foo_dead": 1314,
+        "estimated_tsdmdead_change_rate": -2,
+        "trend_tsdmdead": "Steady",
+        "capture_date_fc": "20250930",
+        "percent_captured_fc": 100,
+        "fcgreen_median": 76,
+        "fcgreen_change_rate": 0,
+        "fcgreen_trend": "Steady",
+        "fcdead_median": 9,
+        "fcdead_change_rate": 0,
+        "fcdead_trend": "Steady",
+        "fcbare_median": 15,
+        "fcbare_change_rate": 0,
+        "fcbare_trend": "Steady"
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -939,8 +963,53 @@ Notes:
 - Legend is a colour table; it can be used to style returned geojson if
   you wish by linking it with the estimated_median_tsdm field
   (the legend attribute is a geojson foreign member:
-  https://www.rfc-editor.org/rfc/rfc7946#section-6.1) 
+  https://www.rfc-editor.org/rfc/rfc7946#section-6.1)
 
+
+**Migration guide from /geojson to /snapshot**
+
+The /snapshot endpoint is a more flexible and extensible replacement for the
+/geojson endpoint. The structure of the stats objects returned by /snapshot
+are consistent with those returned from the statistics endpoints
+such as /gettsdmstats.
+
+
+/geojson attribute | /snapshot attribute
+------------------|-----------------
+property_id | property_id
+paddock_id | 'properties' paddock_id
+paddock_name | 'properties' paddock_name
+centroid | 'properties' centroid
+paddock_area_ha | 'properties' paddock_area_ha
+capture_date | 'tsdm' stats: dates[0]
+percent_captured | 'tsdm' stats: captured[0]
+estimated_median_tsdm | 'tsdm' stats: median[0]
+estimated_median_tsdm_error | 'tsdm' stats: median_error[0]
+estimated_foo | 'tsdm' stats: foo[0]
+estimated_tsdm_change_rate | 'tsdm' stats: change_rate[0]
+trend | 'tsdm' stats: trend
+raw_median_tsdm | 'tsdm' stats: captured_median[0]
+raw_foo | 'tsdm' stats: captured_foo[0]
+estimated_median_tsdmgreen | 'tsdmgreen' stats: median[0]
+estimated_foo_green | 'tsdmgreen' stats: foo[0]
+estimated_tsdmgreen_change_rate | 'tsdmgreen' stats: change_rate[0]
+trend_tsdmgreen | 'tsdmgreen' stats: trend
+estimated_median_tsdmdead | 'tsdmdead' stats: median[0]
+estimated_foo_dead | 'tsdmdead' stats: foo[0]
+estimated_tsdmdead_change_rate | 'tsdmdead' stats: change_rate[0]
+trend_tsdmdead | 'tsdmdead' stats: trend
+capture_date_fc | 'fcgreen' stats: dates[0]
+percent_captured_fc | 'fcgreen' stats: captured[0]
+fcgreen_median | 'fcgreen' stats: median[0]
+fcgreen_change_rate | 'fcgreen' stats: change_rate[0]
+fcgreen_trend | 'fcgreen' stats: trend
+fcdead_median | 'fcdead' stats: median[0]
+fcdead_change_rate | 'fcdead' stats: change_rate[0]
+fcdead_trend | 'fcdead' stats: trend
+fcbare_median | 'fcbare' stats: median[0]
+fcbare_change_rate | 'fcbare' stats: change_rate[0]
+fcbare_trend | 'fcbare' stats: trend
+integration_id | Deprecated
 
 ## Device workflow example
 
