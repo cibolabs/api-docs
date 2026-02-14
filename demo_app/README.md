@@ -57,8 +57,8 @@ It provides a unified interface to view national-scale biomass data (AFM) and hi
     ```
 
 3.  **Configure Credentials**:
-    - The project includes a `.env` file for configuration.
-    - Open `.env` and verify/update your credentials:
+    - The project requires a `.env` file for configuration.
+    - Create `.env` and verify/update your credentials:
       ```ini
       CIBO_CLIENT_ID=your_client_id_here
       CIBO_CLIENT_SECRET=your_client_secret_here
