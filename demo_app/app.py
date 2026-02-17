@@ -1,5 +1,7 @@
 import os
 import base64
+import time
+import threading
 import requests
 from flask import Flask, jsonify, send_from_directory, request, Response
 from dotenv import load_dotenv
@@ -23,23 +25,50 @@ TOKEN_URL = "https://login.cibolabs.com/oauth2/token"
 if not CLIENT_ID or not CLIENT_SECRET:
     print("Warning: CIBO_CLIENT_ID or CIBO_CLIENT_SECRET not set in environment or .env file.")
 
-def fetch_token_internal():
-    # Encode credentials
-    credentials = f"{CLIENT_ID}:{CLIENT_SECRET}"
-    encoded_credentials = base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
+class TokenManager:
+    def __init__(self):
+        self._access_token = None
+        self._expires_at = 0
+        self._lock = threading.Lock()
 
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": f"Basic {encoded_credentials}"
-    }
-    data = {
-        "grant_type": "client_credentials"
-    }
+    def get_token(self):
+        # Check if token is valid with a 60-second buffer
+        if self._access_token and time.time() < self._expires_at - 60:
+            return {'access_token': self._access_token}
 
-    # Use session
-    response = session.post(TOKEN_URL, headers=headers, data=data)
-    response.raise_for_status()
-    return response.json()
+        with self._lock:
+            # Double-check inside lock to prevent race conditions
+            if self._access_token and time.time() < self._expires_at - 60:
+                return {'access_token': self._access_token}
+            
+            return self._refresh_token()
+
+    def _refresh_token(self):
+        # Encode credentials
+        credentials = f"{CLIENT_ID}:{CLIENT_SECRET}"
+        encoded_credentials = base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
+
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Authorization": f"Basic {encoded_credentials}"
+        }
+        data = {
+            "grant_type": "client_credentials"
+        }
+
+        # Use session
+        response = session.post(TOKEN_URL, headers=headers, data=data)
+        response.raise_for_status()
+        
+        token_data = response.json()
+        self._access_token = token_data.get('access_token')
+        # Default to 3600 seconds (1 hour) if expires_in is missing
+        expires_in = token_data.get('expires_in', 3600)
+        self._expires_at = time.time() + expires_in
+        
+        return token_data
+
+token_manager = TokenManager()
 
 @app.route('/')
 def index():
@@ -48,7 +77,7 @@ def index():
 @app.route('/token')
 def get_token():
     try:
-        token_data = fetch_token_internal()
+        token_data = token_manager.get_token()
         return jsonify(token_data)
     except requests.exceptions.RequestException as e:
         print(f"Error fetching token: {e}")
@@ -57,7 +86,7 @@ def get_token():
 @app.route('/dates')
 def get_dates():
     try:
-        token_data = fetch_token_internal()
+        token_data = token_manager.get_token()
         token = token_data.get('access_token')
         
         response = session.get("https://data.afm.cibolabs.com/getimagedates", headers={
@@ -73,7 +102,7 @@ def get_dates():
 @app.route('/stats', methods=['POST'])
 def get_stats():
     try:
-        token_data = fetch_token_internal()
+        token_data = token_manager.get_token()
         token = token_data.get('access_token')
         
         # Forward query parameters
@@ -110,7 +139,7 @@ PK_DATA_URL = "https://data.pasturekey.cibolabs.com"
 @app.route('/pk/dates/<property_id>')
 def get_pk_dates(property_id):
     try:
-        token_data = fetch_token_internal()
+        token_data = token_manager.get_token()
         token = token_data.get('access_token')
         
         response = session.get(f"{PK_DATA_URL}/getimagedates/{property_id}", headers={
@@ -126,7 +155,7 @@ def get_pk_dates(property_id):
 @app.route('/pk/geom/<property_id>', methods=['POST'])
 def get_pk_geom(property_id):
     try:
-        token_data = fetch_token_internal()
+        token_data = token_manager.get_token()
         token = token_data.get('access_token')
         
         # /geom is POST
@@ -143,7 +172,7 @@ def get_pk_geom(property_id):
 @app.route('/pk/stats/<property_id>', methods=['POST'])
 def get_pk_stats(property_id):
     try:
-        token_data = fetch_token_internal()
+        token_data = token_manager.get_token()
         token = token_data.get('access_token')
         params = request.args
         
@@ -164,7 +193,7 @@ def get_pk_stats(property_id):
 @app.route('/proxy/tiles/afm/<path:subpath>')
 def proxy_afm_tiles(subpath):
     try:
-        token_data = fetch_token_internal()
+        token_data = token_manager.get_token()
         token = token_data.get('access_token')
         
         url = f"https://tiles.afm.cibolabs.com/{subpath}"
@@ -185,7 +214,7 @@ def proxy_afm_tiles(subpath):
 @app.route('/proxy/tiles/pk/<path:subpath>')
 def proxy_pk_tiles(subpath):
     try:
-        token_data = fetch_token_internal()
+        token_data = token_manager.get_token()
         token = token_data.get('access_token')
         
         url = f"https://tiles.pasturekey.cibolabs.com/{subpath}"
