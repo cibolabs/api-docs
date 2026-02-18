@@ -14,7 +14,9 @@ Learn more about these services at [cibolabs.com.au](https://cibolabs.com.au).
 - [AFM Tile API](afm_tile.md)
 - [Pasture Key API](pasturekey.md)
 - [Pasture Key Tile API](pasturekey_tile.md)
+- [Demo AFM and Pasture Key Web App](demo_app/README.md)
 - [Demo Pasture Key Web App](docs/README.md)
+
 
 ## The AFM API
 

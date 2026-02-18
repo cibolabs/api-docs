@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+    <head>
+        <meta charset="UTF-8">
+        <title>AFM Demo</title>
+        <!-- Leaflet -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+         crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+         crossorigin=""></script>
+         
+        <!-- Custom Headers Plugin -->
+        <script src="js/leaflet-custom-headers/main.js"></script>
+         
+        <!-- Slider Plugin -->
+        <link rel="stylesheet" href="js/leaflet-slider/leaflet-slider.css" />
+        <script src="js/leaflet-slider/leaflet-slider.js"></script>
+        
+        <!-- Grouped Layer Control Plugin -->
+        <link rel="stylesheet" href="js/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.min.css" />
+        <script src="js/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.min.js"></script>
+        
+        <!-- Leaflet Control Geocoder -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+        <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+        
+        <!-- Turf.js for Point-in-Polygon -->
+        <script src="https://cdn.jsdelivr.net/npm/@turf/turf/turf.min.js"></script>
+             
+        <style>
+            body { margin: 0; padding: 0; }
+            #map { height: 100vh; width: 100vw; }
+            .coordinate-control {
+                background: rgba(255, 255, 255, 0.8);
+                padding: 5px 10px;
+                border-radius: 4px;
+                box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+                font-family: monospace;
+                font-size: 12px;
+                line-height: 1.4;
+            }
+            #farm-control {
+                position: absolute;
+                top: 10px;
+                left: 60px; /* To the right of Geocoder */
+                z-index: 1000;
+                background: white;
+                padding: 5px;
+                border-radius: 4px;
+                box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+                display: flex;
+                gap: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="farm-control">
+            <input type="text" id="farm-id" placeholder="Farm UUID" value="434b1601-200d-428c-9c6d-1446b05ecc3b">
+            <button id="load-farm">Load</button>
+        </div>
+        <div id="map"></div>
+        <!-- App Logic -->
+        <script src="app.js"></script>
+    </body>
+</html>
