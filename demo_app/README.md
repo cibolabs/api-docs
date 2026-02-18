@@ -52,13 +52,18 @@ It provides a unified interface to view national-scale biomass data (AFM) and hi
     ```
 
 2.  **Install Python dependencies**:
+
+    Note: this example creates a python virtual env first.
+
     ```bash
+    python3 -m pyenv .afmdemo_venv
+    source .afmdemo_venv/bin/activate
     pip install -r requirements.txt
     ```
 
 3.  **Configure Credentials**:
     - The project requires a `.env` file for configuration.
-    - Create `.env` and verify/update your credentials:
+    - Create `.env` in the same directory as app.py and verify/update your credentials:
       ```ini
       CIBO_CLIENT_ID=your_client_id_here
       CIBO_CLIENT_SECRET=your_client_secret_here
@@ -85,11 +90,12 @@ It provides a unified interface to view national-scale biomass data (AFM) and hi
     - Use the **Slider** (bottom-left) to change the date.
     - Use the **Layer Control** (top-right) to switch to NBAR or Fractional Cover.
 
-2.  **Load a Farm**:
+2.  **Load a Pasture Key Farm**:
     - Enter a valid Property UUID in the "Farm UUID" box (top-left).
     - Example ID: `434b1601-200d-428c-9c6d-1446b05ecc3b`
     - Click **Load**.
     - The map will zoom to the farm boundaries.
+    - The pasture biomass layer will load by default, if you don't see this layer, it may be because the ground was obscurred by cloud, try changing the date with the date slider or loading the satellite image (the NBAR layer) from the layers list in the top-right
 
 3.  **View Farm Data**:
     - Open the **Layer Control** and select a layer under **"Pasture Key (Farm)"** (e.g., *TSDM (Farm)* or *TSDM Composite (Farm)*).
