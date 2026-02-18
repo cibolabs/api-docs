@@ -29,6 +29,7 @@ class TokenManager:
     def __init__(self):
         self._access_token = None
         self._expires_at = 0
+        self._refresh_count = 0
         self._lock = threading.Lock()
 
     def get_token(self):
@@ -44,6 +45,9 @@ class TokenManager:
             return self._refresh_token()
 
     def _refresh_token(self):
+        self._refresh_count += 1
+        print(f"Token refreshed: {self._refresh_count}")
+
         # Encode credentials
         credentials = f"{CLIENT_ID}:{CLIENT_SECRET}"
         encoded_credentials = base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
