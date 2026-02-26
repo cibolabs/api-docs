@@ -62,6 +62,63 @@ to send requests to the API. They assume:
 
 ### Metadata endpoints
 
+#### /getterritory
+
+Get the supported territories/areas.
+
+**Request**
+
+GET https://data.pasturekey.cibolabs.com/getterritory
+
+```bash
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.pasturekey.cibolabs.com/getterritory"
+```
+
+**Response**
+
+The response is a GeoJson with the geometry of the supported territories.
+Each Feature's properties contains:
+- `common_name`, with the territory name, e.g. "Australia"
+- `status`, with the following values:
+  - `Supported`: Territory is fully supported
+  - `In trial`: Cibolabs is assessing the efficacy of the product in this region
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                96.89371594,
+                -12.1164709
+              ],
+              [
+                96.88827992,
+                -12.10711201
+              ]
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "status": "Supported",
+        "common_name": "Australia"
+      }
+    }
+  ]
+}
+```
+
 #### /getimagedates
 
 Get a list of dates for the satellite overpasses.
