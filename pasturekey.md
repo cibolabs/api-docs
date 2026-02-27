@@ -105,7 +105,8 @@ Each Feature's properties contains:
               [
                 96.88827992,
                 -12.10711201
-              ]
+              ],
+              ...
             ]
           ]
         ]
@@ -114,7 +115,31 @@ Each Feature's properties contains:
         "status": "Supported",
         "common_name": "Australia"
       }
-    }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -124.731746,
+              48.169997
+            ],
+            [
+              -124.696111,
+              48.198599
+            ],
+            ...
+          ]
+        ]
+      },
+      "properties": {
+        "status": "In trial",
+        "common_name": "USA"
+      }
+    },
+    ...
   ]
 }
 ```
@@ -154,7 +179,8 @@ curl -s -X GET \
               [
                 96.88827992,
                 -12.10711201
-              ]
+              ],
+              ...
             ]
           ]
         ]
