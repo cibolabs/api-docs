@@ -66,7 +66,7 @@ to send requests to the API. They assume:
 
 Get the supported territories/areas.
 
-**Request**
+**Request all territories**
 
 GET https://data.pasturekey.cibolabs.com/getterritory
 
@@ -78,7 +78,7 @@ curl -s -X GET \
     "https://data.pasturekey.cibolabs.com/getterritory"
 ```
 
-**Response**
+**Response all territories**
 
 The response is a GeoJson with the geometry of the supported territories.
 Each Feature's properties contains:
@@ -113,6 +113,90 @@ Each Feature's properties contains:
       "properties": {
         "status": "Supported",
         "common_name": "Australia"
+      }
+    }
+  ]
+}
+```
+
+**Request with point location**
+
+You can supply a longitude and latitude to find out if a point location is
+within a supported territory.
+
+GET https://data.pasturekey.cibolabs.com/getterritory?longitude=144.6005&latitude=-25.9108
+
+```bash
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.pasturekey.cibolabs.com/getterritory?longitude=144.6005&latitude=-25.9108"
+```
+
+**Response with point location**
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                96.89371594,
+                -12.1164709
+              ],
+              [
+                96.88827992,
+                -12.10711201
+              ]
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "status": "Supported",
+        "common_name": "Australia"
+      }
+    }
+  ]
+}
+```
+
+**Request with point location (unsupported territory)**
+
+The supplied point is returned if it is outside all supported territories.
+
+GET https://data.pasturekey.cibolabs.com/getterritory?longitude=77.23&latitude=28.61
+
+```bash
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.pasturekey.cibolabs.com/getterritory?longitude=77.23&latitude=28.61"
+```
+
+**Response with point location (unsupported territory)**
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [77.23, 28.61]
+      },
+      "properties": {
+        "status": "Unsupported",
+        "common_name": null
       }
     }
   ]
