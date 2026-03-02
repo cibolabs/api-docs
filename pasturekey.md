@@ -41,6 +41,7 @@ When using these endpoints for a device, specify the device ID
 
 Date | Change | endpoints
 ---- | ------ | --------
+2026-02-27 | Added /getterritory endpoint | /getterritory
 2026-02-13 | Added centroid attribute to features properties | /geom, /snapshot
 2026-02-13 | Improved response times of the /snapshot endpoint, especially for large properties | /snapshot
 2026-02-11 | Bug fix: /snapshot now correctly returns nearest, prior date when data not available for given date | /snapshot
