@@ -26,6 +26,9 @@ specifying the property ID and optional paddock IDs. See the examples below.
 
 ### Pasture Key devices
 
+Note: The device service is under review.
+Please contact support@cibolabs.com.au if you would like access to this service.
+
 A Pasture Key device is associated with one or more areas of interest (AOI).
 A device and its AOIs are created (and deleted) using the device endpoints.
 See the examples below.
@@ -840,6 +843,22 @@ Length: 1183718 (1.1M) [binary/octet-stream]
 Saving to: ‘order_894.zip’ 
 order_894.zip                 100%[===============================================>]   1.13M  --.-KB/s    in 0.007s
 2025-05-29 06:47:37 (161 MB/s) - ‘order_894.zip’ saved [1183718/1183718]
+```
+
+#### /subpaddock
+
+Request statistics for smaller areas within your paddocks. The client defines the polygons, and passes them to the API as geojson.
+
+** Request **
+
+TODO: add geojson body, list of products, and the response.
+
+```bash
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.pkey.cibolabs.com/subpaddock/20250210/e354f641-fce2-4299-a7d4-561dc31597d2?product=tsdmcomp"
 ```
 
 ### Device endpoints
