@@ -845,20 +845,353 @@ order_894.zip                 100%[=============================================
 2025-05-29 06:47:37 (161 MB/s) - ‘order_894.zip’ saved [1183718/1183718]
 ```
 
-#### /subpaddock
+#### Sub-paddock statistics
 
-Request statistics for smaller areas within your paddocks. The client defines the polygons, and passes them to the API as geojson.
+We provide a workflow for you to trigger processing of statistics for smaller
+areas within your paddocks, which we call sub-paddocks.
 
-** Request **
+The workflow is:
+- POST the sub-paddock areas to the `/subpaddock` endpoint, which triggers
+  processing on the backend; the response contains
+  - a link to the order status at the `subpaddockstatus` endpoint
+  - a link to the output geojson file, that will be created
+- Poll the order status until `SUCCEEDED`
+- Download the sub-paddock statistics geojson file
 
-TODO: add geojson body, list of products, and the response.
+##### /subpaddock
+
+Request statistics for smaller areas within your paddocks.
+The client passes the sub-paddock areas to the API as geojson.
+
+Used together with `/subpaddockstatus`.
+
+**Request**
+
+POST https://data.pasturekey.cibolabs.com/subpaddock/20250210/e354f641-fce2-4299-a7d4-561dc31597d2?product=tsdmcomp
 
 ```bash
+geojson_file="subpaddocks.geojson"
+geojson=$(cat ${geojson_file})
+imagedate="20250210"
+farmid="e354f641-fce2-4299-a7d4-561dc31597d2"
+product="tsdmcomp"
+
 curl -s -X POST \
-    --output data.json \
+    --output subpaddock_response.json \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${TOKEN}" \
-    "https://data.pkey.cibolabs.com/subpaddock/20250210/e354f641-fce2-4299-a7d4-561dc31597d2?product=tsdmcomp"
+    -d "${geojson}" \
+    "https://data.pasturekey.cibolabs.com/subpaddock/${imagedate}/${farmid}?product=${product}"
+```
+
+The `product` query parameter can be one of the following:
+- tsdmcomp (default) (a 30-day composite of Total Standing Dry Matter)
+- tsdmgreencomp (a 30-day composite of green Total Standing Dry Matter)
+- tsdmdeadcomp (a 30-day composite of dead Total Standing Dry Matter)
+- fccomp (a 30-day composite of fractional cover)
+- tsdm (single-date Total Standing Dry Matter)
+- tsdmgreen (single-date green Total Standing Dry Matter)
+- tsdmdead (single-date dead Total Standing Dry Matter)
+- fc (single-date fractional cover)
+
+**Is it better to use the composite or single date product?**
+
+In drier climates or periods, the composite product will
+give the best coverage of a polygon, thus the best chance of getting
+statistics for an arbitrary date. However a composite requires at least
+three valid (cloud free) satellite captures in the 30-day period.
+
+So, in wetter climates or periods, where three observations are not available,
+the single-date product may give estimates for a given overpass date when the
+composite product does not.
+However, note that for TSDM, there is high date-to-date variation, thus we
+generally recommend using the composite product, falling back to the
+single-date if no data are available.
+
+So for any given date, you might make two requests:
+1. stats for the composite product
+2. stats for the single-date product
+
+Then use the composite stats when they are available,
+and the single-date stats (if available) when they are not.
+
+**Body**
+
+A geojson that defines the sub-paddock polygons. Each Feature's geometry must
+be one of Polygon or MultiPolygon.
+
+We recommend that you supply a "name" or similar field in each Feature's
+properties object to identify the returned statistics for each
+sub-paddock.
+
+We prefer that you don't supply the following fields in the properties object.
+However, if you do, we keep your values, with the exception of
+status, reason, cibo_id, and stats which we overwrite.
+See `geojson output` below for details:
+- status
+- reason
+- area_ha
+- cibo_id
+- paddock_id
+- paddock_name
+- stats
+
+If a satellite overpass was not captured for the specified date, we'll
+use the closest date, within 10 days, if there is one.
+
+Limitation: The body must be less than 6 MB.
+If this is exceeded, split the property (e.g. 'east' and 'west') and
+make multiple requests.
+
+```json
+{ 
+
+  "type": "FeatureCollection",
+  "features": [ 
+    { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "windwill paddock", 
+        "landtype": "XYZ" 
+      }, 
+      "geometry": { 
+        "type": "Polygon", 
+        "coordinates": [ 
+        ... 
+       ] 
+    }, 
+    { 
+      ... 
+      ... 
+    } 
+  ] 
+} 
+```
+
+**Reponse**
+
+The response is json. It contains an order ID and two links:
+1. request_status: a link to the `/subpaddockstatus` endpoint;
+   use this to poll the order’s status 
+2. the geojson with the sub-paddock statistics;
+   we make the file available when the order’s status is `SUCCEEDED`
+
+Example:
+
+```json
+{ 
+  "orderid": 346, 
+  "request_status": "https://data.pasturekey.cibolabs.com/subpaddockstats/346",
+  "url": "https://pkey-subpaddock-orders.s3.amazonaws.com/pkey_subpaddock_order_e354f641-fce2-4299-a7d4-561dc31597d2-20250210_00_o346.geojson?AWSAccessKeyId=AKIAUZPNLACPXMIVFZFE&Signature=qkHKxuOKLXsYFsKicJ%2FsFpY0LIE%3D&Expires=1748588254"  
+} 
+```
+
+**geojson output**
+
+The geojson contains:
+- all properties in each Feature (sub-paddock) of the supplied geojson
+- order metadata
+- each Feature's statistics
+
+We insert these fields at the FeatureCollection level:
+- property_id: the supplied property_id
+- requested_date: date of requested satellite overpass 
+- orderid: The cibo-assigned order ID
+
+We insert these fields in the properties object of each Feature:
+- status of succeeded, failed, or refused:
+  - succeeded: processing was successful and statistics provided 
+  - failed: processing was attempted but failed . See reason. 
+  - refused: processing was refused. See reason
+- reason: a reason why processing  failed or was refused 
+- area_ha: an estimate of the sub-paddock area in hectares
+- cibo_id: an arbitrary number we assign to the polygon for processing purposes
+- paddock_id: the cibo ID (geo_id) of the paddock containing the polygon 
+- paddock_name: the name we have in our system of the paddock containing the polygon 
+- stats: a list of stats objects with the statistics
+
+If you provide any of the above attributes in the body, we will overwrite
+status, reason, cibo_id and stats. We don't overwrite the others.
+
+We will refuse to process polygons for the following reasons:
+- Geometry is not of type Polygon or MultiPolygon 
+- Invalid topology 
+- Polygon < 1 ha 
+- Polygon bounding box < 10 m 
+- Sliver polygon – provide the Polsby-popper score and the threshold. E.g. score < threshold 
+- Polygon is not contained within a paddock 
+- No satellite observations for the paddock within 10 days of the requested date 
+ 
+
+```json
+{ 
+  "type": "FeatureCollection", 
+  "property_id": "e354f641-fce2-4299-a7d4-561dc31597d2", 
+  "requested_date": "20250210", 
+  "orderid": 346, 
+  "features": [ 
+    { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "windwill subpaddock NW", 
+        "landtype": "XYZ", 
+        "status": "succeeded",
+        "reason": null,
+        "area_ha": 132, 
+        "cibo_id": 1, 
+        "paddock_id": "02d6301f-233c-47c7-8b0c-9a3626874ca2", 
+        "paddock_name": "windmill",
+        "stats": [ 
+          { 
+            "product": "tsdmcomp",
+            "measure": "tsdm", 
+            "unit": "kg/ha", 
+            "dates": ["20250210"], 
+            "median": [1223], 
+            "foo": [398698], 
+            "captured": [100] 
+          },  
+        ] 
+      }, 
+      "geometry": { 
+        "type": "Polygon", 
+        "coordinates": [ 
+        ... 
+        ] 
+      } 
+    }, 
+    { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "over the ridge subpaddock section B", 
+        "landtype": "5TyYR2", 
+        "status": "refused", 
+        "reason": "Sliver polygon: Polsby-Popper Score of 0.052 is below threshold of 0.1", 
+        "area_ha": 52,
+        "cibo_id": 2, 
+        "paddock_id": "02d6301f-233c-47c7-8b0c-9a3626874ca2", 
+        "paddock_name": "over the ridge", 
+        "stats": [] 
+      },
+      "geometry": { 
+        "type": "Polygon", 
+        "coordinates": [ 
+        ... 
+        ] 
+      } 
+    }, 
+    { 
+      ... 
+      ... 
+    } 
+  ] 
+}
+```
+
+Examples of stats objects for the products. 
+All Total Standing Dry Matter (TSDM) products have the same fields.
+The requested `product` is: tsdmcomp, tsdmgreencomp, tsdmdeadcomp, tsdm, tsdmgreen, tsdmdead.
+Its measure is `tsdm` in kg/ha.
+
+```json
+"stats": [
+  { 
+    "product": "tsdmcomp",
+    "measure": "tsdm", 
+    "unit": "kg/ha", 
+    "dates": ["20250210"], 
+    "median": [1223], 
+    "foo": [398698], 
+    "captured": [100] 
+  }
+]
+```
+
+For fractional cover, the requested product is `fc` or `fccomp`.
+The measures are `fcgreen`, `fcdead` and `fcbare` with units of % cover.
+A request for fractional cover data returns three objects in a Feature's stats
+list.
+ 
+``` json
+"stats": [ 
+  { 
+    "product": "fc", 
+    "measure": "fcgreen", 
+    "unit": "%", 
+    "dates": ["20251003"], 
+    "median": [20], 
+    "captured": [100] 
+  }, 
+  { 
+    "product": "fc", 
+    "measure": "fcdead", 
+    "unit": "%", 
+    "dates": ["20251003"], 
+    "median": [62], 
+    "captured": [100] 
+  }, 
+  { 
+    "product": "fc", 
+    "measure": "fcbare", 
+    "unit": "%", 
+    "dates": ["20251003"], 
+    "median": [18], 
+    "captured": [100] 
+  } 
+]
+```
+
+See also: `/subpaddockstatus`
+
+
+##### /subpaddockstatus
+
+Get the status of an order made with the `/subpaddock` endpoint.
+
+**Request**
+
+The `/subpaddock` endpoint returns a `request_status` URL in its response.
+Use this URL to poll the order status.
+When the order status is `SUCCEEDED`, the geojson with the sub-paddock statistics is available at the URL returned in the `/subpaddock` response.
+
+GET https://data.pasturekey.cibolabs.com/subpaddockorder/346
+
+```bash
+curl -s -X GET \
+    --output subpaddock_status_response.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.pasturekey.cibolabs.com/subpaddockstats/346"
+```
+
+**Response**
+
+```json
+{ 
+  "orderid": 346, 
+  "status": "SUCCEEDED", 
+  "message": null 
+} 
+```
+
+Values of status are:
+- RECEIVED: received, but processing not yet started 
+- RUNNING: your request is processing 
+- FAILED: an error occurred 
+- SUCCEEDED: processing has completed and file is ready for collection 
+
+Poll the status file until the status is SUCCEEDED or FAILED. 
+When status is SUCCEEDED, use the url returned in the `/subpaddock` response
+to download the geojson file. 
+
+When status is FAILED, the message attribute will instruct you to contact support. 
+
+```json
+{   
+  "orderid": "346", 
+  "status": "FAILED", 
+  "message": "contact support@cibolabs.com.au" 
+}
 ```
 
 ### Device endpoints
@@ -869,7 +1202,7 @@ Create a new device and return the device ID. This is a POST request and takes n
 JSON contains the newly allocated device ID. This device ID can be used with the /adddevicepointaoi endpoint
 as described below.
 
-** Request **
+**Request**
 
 ```bash
 curl -s -X POST \
@@ -879,7 +1212,7 @@ curl -s -X POST \
     "https://data.pasturekey.cibolabs.com/newdevice"
 ```
 
-** Response **
+**Response**
 
 ```json
 {
@@ -896,7 +1229,7 @@ in metres. The response is JSON and contains the AOI ID of the newly created AOI
 Once the AOI is added and the backprocessing has completed then data will be able to be
 queried on the device and AOI with the endpoints described above.
 
-** Request **
+**Request**
 
 ```bash
 device_id=cbcd085f-0865-46d8-b496-ce5c2291943b
@@ -910,7 +1243,7 @@ curl -s -X POST \
     "https://data.pasturekey.cibolabs.com/adddevicepointaoi/${device_id}/${longitude}/${latitude}/${radius}"
 ```
 
-** Response **
+**Response**
 
 ```json
     {
@@ -934,7 +1267,7 @@ curl -s -X POST \
     "https://data.pasturekey.cibolabs.com/deletedeviceaoi/${device_id}/${aoi_id}"
 ```
 
-** Response **
+**Response**
 
 ```json
     {
@@ -959,7 +1292,7 @@ curl -s -X POST \
     "https://data.pasturekey.cibolabs.com/canceldevice/${device_id}"
 ```
 
-** Response **
+**Response**
 
 ```json
     {
