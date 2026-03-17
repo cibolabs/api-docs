@@ -44,6 +44,7 @@ When using these endpoints for a device, specify the device ID
 
 Date | Change | endpoints
 ---- | ------ | --------
+2026-03-18 | Added sub-paddock statistics workflow | /subpaddock, /subpaddockstatus
 2026-02-27 | Added /getterritory endpoint | /getterritory
 2026-02-13 | Added centroid attribute to features properties | /geom, /snapshot
 2026-02-13 | Improved response times of the /snapshot endpoint, especially for large properties | /snapshot
@@ -858,6 +859,9 @@ The workflow is:
 - Poll the order status until `SUCCEEDED`
 - Download the sub-paddock statistics geojson file
 
+We provide a worked example of this workflow in the
+[subpaddock workflow example section below](#sub-paddock-workflow-example).
+
 ##### /subpaddock
 
 Request statistics for smaller areas within your paddocks.
@@ -1531,9 +1535,127 @@ fcbare_change_rate | 'fcbare' stats: change_rate[0]
 fcbare_trend | 'fcbare' stats: trend
 integration_id | Deprecated
 
+## sub-paddock workflow example
+
+This example demonstrates using the /subpaddock and /subpaddockstatus
+endpoints to request statistics for sub-paddock areas.
+It assumes you have already called the [login endpoint](login.md) to create the
+access TOKEN variable.
+
+The script proceeds as follows:
+- calls the /subpaddock endpoint to submit the order
+- polls the /subpaddockstatus endpoint until the order is complete (status of `FAILED` or `SUCCEEDED`)
+- when status is `SUCCEEDED`, downloads the geojson file with the sub-paddock statistics
+
+```bash
+function call_subpaddock() {
+    # Submit a subpaddock order to the API.
+    #
+    # Arguments:
+    #   $1  url       - the full API endpoint URL
+    #   $2  body      - path to the GeoJSON request body file
+    #   $3  response  - path to write the JSON response file
+    local url=$1
+    local body=$2
+    local response=$3
+    echo $url
+    curl -s -X POST \
+        --output ${response_file} \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -d "@${body}" \
+        "$url"
+    echo ""
+    cat ${response_file} | jq
+}
+
+
+function call_subpaddockstatus() {
+    # Poll the subpaddockstatus endpoint until a terminal status is reached.
+    # Prints the final status (SUCCEEDED or FAILED) to stdout so it can be
+    # captured by the caller. All progress messages are sent to stderr.
+    #
+    # Arguments:
+    #   $1  response  - path to the JSON response file from call_subpaddock,
+    #                   which contains the 'request_status' polling URL
+    local response=$1
+    local request_status=$(cat ${response} | jq -r '.request_status')
+    echo "Polling subpaddock status at ${request_status}..." >&2
+    while true; do
+        status_response=$(curl -s -H "Authorization: Bearer ${TOKEN}" "${request_status}")
+        status=$(echo "${status_response}" | jq -r '.status')
+        echo "Status: ${status}" >&2
+        if [[ "${status}" == "SUCCEEDED" || "${status}" == "FAILED" ]]; then
+            echo "Final status reached: ${status}" >&2
+            echo "${status}"
+            break
+        fi
+        sleep 30
+    done
+}
+
+function download_geojson() {
+    # Download the output GeoJSON for a completed order.
+    #
+    # Arguments:
+    #   $1  response         - path to the JSON response file from call_subpaddock,
+    #                          which contains the presigned 'url' to the output GeoJSON
+    #   $2  output_filename  - local filename to save the downloaded GeoJSON to
+    local response=$1
+    local output_filename=$2
+    geojson_url=$(cat ${response} | jq -r '.url')
+    echo "Downloading geojson from ${geojson_url}..."
+    curl -s -o "${output_filename}" "${geojson_url}"
+}
+
+# Process for the following property ID, date, and product.
+property_id=6e65fdc2-5779-4636-b77e-cf11e44ba46b  # Replace with your property ID.
+date=20260204  # Satellite overpass dates can be obtained from the /getimagedates endpoint.
+product=tsdmcomp  # This is the 30-day composite of Total Standing Dry Matter.
+subpaddock_file=subpaddocks.geojson
+response_file=subpaddock_response.json
+output_filename="subpaddock_${product}_${property_id}_${date}.geojson"
+
+call_subpaddock "https://data.pasturekey.cibolabs.com/subpaddock/${date}/${property_id}?product=${product}" "${subpaddock_file}" "${response_file}"
+
+final_status=$(call_subpaddockstatus ${response_file})
+
+if [[ "${final_status}" == "FAILED" ]]; then
+    echo "Error: order FAILED. Cannot download geojson."
+    exit 1
+fi
+
+download_geojson ${response_file} "${output_filename}"
+```
+
+The script generates this output:
+
+```
+https://data.pasturekey.cibolabs.com/subpaddock/20260204/6e65fdc2-5779-4636-b77e-cf11e44ba46b?product=tsdmcomp
+
+{
+  "request_status": "https://data.pasturekey.cibolabs.com/subpaddockstatus/268",
+  "orderid": 268,
+  "url": "https://pkey-subpaddock-batch-dev-outbucket.s3.amazonaws.com/pkey_subpaddock_6e65fdc2-5779-4636-b77e-cf11e44ba46b-20260205_00_o268.geojson?AWSAccessKeyId=AKIAUZPNLACPXMIVFZFE&Signature=ss9bCffStHcZ%2FfWIhk6bsDJ94EM%3D&Expires=1773870181"
+}
+
+Polling subpaddock status at https://data.pasturekey.cibolabs.com/subpaddockstatus/268...
+Status: RECEIVED
+Status: RECEIVED
+Status: RECEIVED
+Status: RUNNING
+Status: RUNNING
+Status: RUNNING
+Status: SUCCEEDED
+Final status reached: SUCCEEDED
+Downloading geojson from https://pkey-subpaddock-batch-dev-outbucket.s3.amazonaws.com/pkey_subpaddock_6e65fdc2-5779-4636-b77e-cf11e44ba46b-20260205_00_o268.geojson?AWSAccessKeyId=AKIAUZPNLACPXMIVFZFE&Signature=ss9bCffStHcZ%2FfWIhk6bsDJ94EM%3D&Expires=1773870181...
+```
+
 ## Device workflow example
 
 Below is a worked example for the device endpoints. It creates a new device and AOI then deletes them.
+It assumes you have already called the [login endpoint](login.md) to create the
+access TOKEN variable.
 
 ```bash
 # create a new device and save the device_id into newdevice.json
