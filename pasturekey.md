@@ -1615,7 +1615,7 @@ subpaddock_file=subpaddocks.geojson
 response_file=subpaddock_response.json
 output_filename="subpaddock_${product}_${property_id}_${date}.geojson"
 
-call_subpaddock "${GATEWAY_URL}/subpaddock/${date}/${property_id}?product=${product}" "${subpaddock_file}" "${response_file}"
+call_subpaddock "https://data.pasturekey.cibolabs.com/subpaddock/${date}/${property_id}?product=${product}" "${subpaddock_file}" "${response_file}"
 
 final_status=$(call_subpaddockstatus ${response_file})
 
@@ -1625,6 +1625,29 @@ if [[ "${final_status}" == "FAILED" ]]; then
 fi
 
 download_geojson ${response_file} "${output_filename}"
+```
+
+The script generates this output:
+
+```
+https://data.pasturekey.cibolabs.com/subpaddock/20260204/6e65fdc2-5779-4636-b77e-cf11e44ba46b?product=tsdmcomp
+
+{
+  "request_status": "https://data.pasturekey.cibolabs.com/subpaddockstatus/268",
+  "orderid": 268,
+  "url": "https://pkey-subpaddock-batch-dev-outbucket.s3.amazonaws.com/pkey_subpaddock_6e65fdc2-5779-4636-b77e-cf11e44ba46b-20260205_00_o268.geojson?AWSAccessKeyId=AKIAUZPNLACPXMIVFZFE&Signature=ss9bCffStHcZ%2FfWIhk6bsDJ94EM%3D&Expires=1773870181"
+}
+
+Polling subpaddock status at https://data.pasturekey.cibolabs.com/subpaddockstatus/268...
+Status: RECEIVED
+Status: RECEIVED
+Status: RECEIVED
+Status: RUNNING
+Status: RUNNING
+Status: RUNNING
+Status: SUCCEEDED
+Final status reached: SUCCEEDED
+Downloading geojson from https://pkey-subpaddock-batch-dev-outbucket.s3.amazonaws.com/pkey_subpaddock_6e65fdc2-5779-4636-b77e-cf11e44ba46b-20260205_00_o268.geojson?AWSAccessKeyId=AKIAUZPNLACPXMIVFZFE&Signature=ss9bCffStHcZ%2FfWIhk6bsDJ94EM%3D&Expires=1773870181...
 ```
 
 ## Device workflow example
