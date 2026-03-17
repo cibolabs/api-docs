@@ -845,7 +845,20 @@ order_894.zip                 100%[=============================================
 2025-05-29 06:47:37 (161 MB/s) - ‘order_894.zip’ saved [1183718/1183718]
 ```
 
-#### /subpaddock
+#### Sub-paddock statistics
+
+We provide a workflow for you to trigger processing of statistics for smaller
+areas within your paddocks, which we call sub-paddocks.
+
+The workflow is:
+- POST the sub-paddock areas to the `/subpaddock` endpoint, which triggers
+  processing on the backend; the response contains
+  - a link to the order status at the `subpaddockstatus` endpoint
+  - a link to the output geojson file, that will be created
+- Poll the order status until `SUCCEEDED`
+- Download the sub-paddock statistics geojson file
+
+##### /subpaddock
 
 Request statistics for smaller areas within your paddocks.
 The client passes the sub-paddock areas to the API as geojson.
@@ -881,7 +894,7 @@ The `product` query parameter can be one of the following:
 - tsdmdead (single-date dead Total Standing Dry Matter)
 - fc (single-date fractional cover)
 
-Is it better to use the composite or single date product?
+**Is it better to use the composite or single date product?**
 
 In drier climates or periods, the composite product will
 give the best coverage of a polygon, thus the best chance of getting
@@ -899,8 +912,8 @@ So for any given date, you might make two requests:
 1. stats for the composite product
 2. stats for the single-date product
 
-Then you can use the composite stats when they are available,
-and the single-date stats when the composite stats are not available.
+Then use the composite stats when they are available,
+and the single-date stats (if available) when they are not.
 
 **Body**
 
@@ -911,9 +924,10 @@ We recommend that you supply a "name" or similar field in each Feature's
 properties object to identify the returned statistics for each
 sub-paddock.
 
-We prefer that you don't supply the follow fields in the properties object.
+We prefer that you don't supply the following fields in the properties object.
 However, if you do, we keep your values, with the exception of
-cibo_id and stats, which we overwrite. See `geojson output` below for details:
+status, reason, cibo_id, and stats which we overwrite.
+See `geojson output` below for details:
 - status
 - reason
 - area_ha
@@ -975,16 +989,16 @@ Example:
 **geojson output**
 
 The geojson contains:
-- all properties in each Feature in supplied geojson
+- all properties in each Feature (sub-paddock) of the supplied geojson
 - order metadata
-- each Feature's (sub-paddock polygon's) statistics
+- each Feature's statistics
 
-These fields are inserted at the FeatureCollection level:
+We insert these fields at the FeatureCollection level:
 - property_id: the supplied property_id
 - requested_date: date of requested satellite overpass 
 - orderid: The cibo-assigned order ID
 
-These fields are added to the properties object of each Feature:
+We insert these fields in the properties object of each Feature:
 - status of succeeded, failed, or refused:
   - succeeded: processing was successful and statistics provided 
   - failed: processing was attempted but failed . See reason. 
@@ -996,9 +1010,8 @@ These fields are added to the properties object of each Feature:
 - paddock_name: the name we have in our system of the paddock containing the polygon 
 - stats: a list of stats objects with the statistics
 
-If you provide any of the above attributes in the body, we do not overwrite
-them, with the exception of cibo_id and stats.
-For example, if you provide area_ha, we don't overwrite it with our estimate.
+If you provide any of the above attributes in the body, we will overwrite
+status, reason, cibo_id and stats. We don't overwrite the others.
 
 We will refuse to process polygons for the following reasons:
 - Geometry is not of type Polygon or MultiPolygon 
@@ -1094,9 +1107,10 @@ Its measure is `tsdm` in kg/ha.
 ]
 ```
 
-For fractional cover, the requested product is `fc` or `fcomp`.
-The measures are `fcgreen`, `fcdead` and `fcbare` in % cover.
-A request for fractional cover data returns three objects in a Feature's stats list.
+For fractional cover, the requested product is `fc` or `fccomp`.
+The measures are `fcgreen`, `fcdead` and `fcbare` with units of % cover.
+A request for fractional cover data returns three objects in a Feature's stats
+list.
  
 ``` json
 "stats": [ 
@@ -1130,7 +1144,7 @@ A request for fractional cover data returns three objects in a Feature's stats l
 See also: `/subpaddockstatus`
 
 
-#### /subpaddockstatus
+##### /subpaddockstatus
 
 Get the status of an order made with the `/subpaddock` endpoint.
 
