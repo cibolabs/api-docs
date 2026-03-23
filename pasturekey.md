@@ -1563,13 +1563,13 @@ function call_subpaddock() {
     local response=$3
     echo $url
     curl -s -X POST \
-        --output ${response_file} \
+        --output "${response}" \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer ${TOKEN}" \
         -d "@${body}" \
         "$url"
     echo ""
-    cat ${response_file} | jq
+    cat "${response}" | jq
 }
 
 
