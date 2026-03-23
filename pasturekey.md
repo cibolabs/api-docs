@@ -44,7 +44,7 @@ When using these endpoints for a device, specify the device ID
 
 Date | Change | endpoints
 ---- | ------ | --------
-2026-03-18 | Added sub-paddock statistics workflow | /subpaddock, /subpaddockstatus
+2026-03-23 | Added sub-paddock statistics workflow | /subpaddock, /subpaddockstatus
 2026-02-27 | Added /getterritory endpoint | /getterritory
 2026-02-13 | Added centroid attribute to features properties | /geom, /snapshot
 2026-02-13 | Improved response times of the /snapshot endpoint, especially for large properties | /snapshot
@@ -928,9 +928,9 @@ We recommend that you supply a "name" or similar field in each Feature's
 properties object to identify the returned statistics for each
 sub-paddock.
 
-We prefer that you don't supply the following fields in the properties object.
-However, if you do, we keep your values, with the exception of
-status, reason, cibo_id, and stats which we overwrite.
+We prefer that you don't supply the following fields in the properties object
+of each Feature.
+We overwrite status, reason, cibo_id, and stats with our own values.
 See `geojson output` below for details:
 - status
 - reason
@@ -1014,18 +1014,21 @@ We insert these fields in the properties object of each Feature:
 - paddock_name: the name we have in our system of the paddock containing the polygon 
 - stats: a list of stats objects with the statistics
 
-If you provide any of the above attributes in the body, we will overwrite
-status, reason, cibo_id and stats. We don't overwrite the others.
+We overwrite `status`, `reason`, `cibo_id` and `stats`.
+All other attributes you provide are returned unchanged.
 
-We will refuse to process polygons for the following reasons:
+We may refuse to process polygons. Check the `status` and `reason` fields
+for each Feature for details. Reasons include:
 - Geometry is not of type Polygon or MultiPolygon 
 - Invalid topology 
-- Polygon < 1 ha 
-- Polygon bounding box < 10 m 
-- Sliver polygon – provide the Polsby-popper score and the threshold. E.g. score < threshold 
+- Polygon too small, e.g. < 1 ha
+- Polygon too large, e.g. > 50,000 ha
+- Polygon bounding box < 10 m in either dimension
+- It's a sliver polygon
 - Polygon is not contained within a paddock 
 - No satellite observations for the paddock within 10 days of the requested date 
- 
+
+Example output: 
 
 ```json
 { 
@@ -1070,7 +1073,7 @@ We will refuse to process polygons for the following reasons:
         "name": "over the ridge subpaddock section B", 
         "landtype": "5TyYR2", 
         "status": "refused", 
-        "reason": "Sliver polygon: Polsby-Popper Score of 0.052 is below threshold of 0.1", 
+        "reason": "Sliver polygon: Polsby-Popper Score of 0.052 is below threshold of 0.05", 
         "area_ha": 52,
         "cibo_id": 2, 
         "paddock_id": "02d6301f-233c-47c7-8b0c-9a3626874ca2", 
@@ -1560,13 +1563,13 @@ function call_subpaddock() {
     local response=$3
     echo $url
     curl -s -X POST \
-        --output ${response_file} \
+        --output "${response}" \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer ${TOKEN}" \
         -d "@${body}" \
         "$url"
     echo ""
-    cat ${response_file} | jq
+    cat "${response}" | jq
 }
 
 
