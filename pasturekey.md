@@ -1073,7 +1073,7 @@ Example output:
         "name": "over the ridge subpaddock section B", 
         "landtype": "5TyYR2", 
         "status": "refused", 
-        "reason": "Sliver polygon: Polsby-Popper Score of 0.052 is below threshold of 0.1", 
+        "reason": "Sliver polygon: Polsby-Popper Score of 0.052 is below threshold of 0.05", 
         "area_ha": 52,
         "cibo_id": 2, 
         "paddock_id": "02d6301f-233c-47c7-8b0c-9a3626874ca2", 
