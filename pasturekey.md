@@ -1021,8 +1021,8 @@ We may refuse to process polygons. Check the `status` and `reason` fields
 for each Feature for details. Reasons include:
 - Geometry is not of type Polygon or MultiPolygon 
 - Invalid topology 
-- Polygon too small: < 1 ha
-- Polygon too large: > 50,000 ha
+- Polygon too small, e.g. < 1 ha
+- Polygon too large, e.g. > 50,000 ha
 - Polygon bounding box < 10 m in either dimension
 - It's a sliver polygon
 - Polygon is not contained within a paddock 
