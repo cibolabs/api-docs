@@ -8,7 +8,7 @@ pasture biomass and ground cover for pre-registered polygons.
 Customers register polygons in the Cibolabs application.
 Each polygons represents a farm paddock.
 
-Data for the following satellite derived measures are available:
+Data for the following satellite-derived measures are available:
 - Total Standing Dry Matter (TSDM) in kg/ha
 - Green TSDM in kg/ha
 - Dead TSDM in kg/ha
@@ -2172,7 +2172,7 @@ endpoint  | measure    | attribute | method
 /gettsdmgreenstats | TSDM green | median | smoothed median from multiple capture dates
 /gettsdmdeadstats  | TSDM dead  | median | smoothed median from multiple capture dates
 /getfcstats | FC       | median    | smoothed median from multiple capture dates
-/subpaddock | all      | median    | median from the requested product - see the notes in the /subpaddock endpoint for details |
+/subpaddock | all      | median    | median from the requested product - see the notes in the /subpaddock endpoint for details
 
 
 <sup>*</sup>For TSDM, the date-to-date variation in estimates can be high due
