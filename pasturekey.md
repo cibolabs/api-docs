@@ -1,12 +1,36 @@
 # Pasture Key API
 
+The Pasture Key API gives registered Pasture Key users access to
+[Cibo Lab's](https://www.cibolabs.com.au/) Pasture Key services.
+
+The API contains endpoints to retrieve satellite-derived estimates of
+pasture biomass and ground cover for pre-registered polygons.
+Customers register polygons in the Cibolabs application.
+Each polygons represents a farm paddock.
+
+Data for the following satellite derived measures are available:
+- Total Standing Dry Matter (TSDM) in kg/ha
+- Green TSDM in kg/ha
+- Dead TSDM in kg/ha
+- Fractional cover (the percentage of the area covered by green vegetation, dead vegetation and bare ground)
+
+For a property, the API provides endpoints to get the property's paddocks,
+dates of the satellite overpasses, and paddock metadata.
+For each measure, the API provides endpoints to get the
+median value and feed on offer (TSDM endpoints only) for the property's paddocks.
+
+The API also has endpoints to trigger offline processing to access:
+- a zip file package of geotiffs for satellite products
+- statistics for sub-paddock regions
+
+
 ## Endpoints
 
 See our
 [online Pasture Key API docs](https://data.pasturekey.cibolabs.com/swagger)
 for the list of endpoints.
 
-## Introduction
+## Properties and devices
 
 The Pasture Key API supports two Pasture Key related services:
 
@@ -44,6 +68,7 @@ When using these endpoints for a device, specify the device ID
 
 Date | Change | endpoints
 ---- | ------ | --------
+2026-03-30 | /snapshot endpoint returns captured_median for the tsdm endpoints, if available, even if the smoothed median value cannot be calculated | /snapshot |
 2026-03-23 | Added sub-paddock statistics workflow | /subpaddock, /subpaddockstatus
 2026-02-27 | Added /getterritory endpoint | /getterritory
 2026-02-13 | Added centroid attribute to features properties | /geom, /snapshot
@@ -580,9 +605,8 @@ Notes:
   - cloud or cloud shadow obscures the satellite’s view of the ground
   - part of the paddock is outside the satellite image’s extents
 - median is the estimated median TSDM in kg/ha for the paddock;
-  it’s calculated by smoothing several observations,
-  which reduces the noise created by partial captures and
-  variation in atmospheric conditions at capture time
+  it’s calculated by smoothing several observations;
+  See [median value calculations](#median-value-calculations) for details
 - median_error is the expected variation in the median estimate
 - Foo (feed on offer) in kg, calculated as the median * area_ha 
 - change rate is measured in kg / ha / day
@@ -1476,11 +1500,9 @@ Notes:
 - percent_captured is the percent of the paddock captured in the satellite image; this is less than 100 when:
   - cloud or cloud shadow obscures the satellite’s view of the ground
   - part of the paddock is outside the satellite image’s extents 
-- estimated_median_tsdm is our best estimate for Total Standing Dry Matter
- in kg/ha; it’s a weighted smoothing of several raw_median_tsdm values,
- to reduce the influence of captures with percent_captured < 100 and
- adverse atmospheric conditions that cause noisy TSDM estimates on any
- given capture date
+- estimated_median_tsdm is the estimated median TSDM in kg/ha for the paddock;
+  it’s calculated by smoothing several observations;
+  See [median value calculations](#median-value-calculations) for details
 - estimated_foo is the feed on offer in the paddock in ha,
   calculated as estimated_median_tsdm x paddock_area_ha
 - estimated_tsdm_change_rate is the rate of change of tsdm in kg/ha/day
@@ -2129,3 +2151,40 @@ in the stats list, one for each year.
 The maximum size of a request's body or the response is 6MB.
 This cannot be increased. You must restructure your requests if
 you hit this limit.
+
+## Median value calculations
+
+For a polygon, we provide a summary statistic that is the median
+value of pixels in the polygon.
+The method used to calculate this summary statistic varies between endpoints.
+The following table summarises the methods. Note that the attribute column
+refers to the attribute name in the stats object of the API response.
+
+endpoint  | measure    | attribute | method
+----------| -----------|-----------|--------
+/snapshot | TSDM       | median    | smoothed median from multiple capture dates
+/snapshot | TSDM       | captured_median<sup>*</sup> | median from single capture date
+/snapshot | TSDM green | median    | smoothed median from multiple capture dates
+/snapshot | TSDM dead  | median    | smoothed median from multiple capture dates
+/snapshot | FC         | median    | smoothed median from multiple capture dates
+/gettsdmstats | TSDM   | median    | smoothed median from multiple capture dates
+/gettsdmstats | TSDM   | captured_median<sup>*</sup> | median from single capture date
+/gettsdmgreenstats | TSDM green | median | smoothed median from multiple capture dates
+/gettsdmdeadstats  | TSDM dead  | median | smoothed median from multiple capture dates
+/getfcstats | FC       | median    | smoothed median from multiple capture dates
+/subpaddock | all      | median    | median from the requested product - see the notes in the /subpaddock endpoint for details |
+
+which reduces the noise created by partial captures and
+  variation in atmospheric conditions at capture time
+
+<sup>*</sup>For TSDM, the date-to-date variation in estimates can be high due
+to different atmospheric, soil moisture and cloud cover conditions.
+Thus, we recommend using the smoothed value. The smoothed value is
+calculated when two conditions are met.
+Firstly, at least 5 satellite overpasses in the smoothing
+window capture at least 10% of the polygon's pixels (e.g. are cloud free).
+And secondly, there is at least one observation within the last 5 days that
+captures at least 10% of the polygon's pixels.
+So, during cloudy periods a smoothed value may not be returned by the API.
+In this case, you may wish to fallback to the captured_median value
+if it is available and the percent captured is sufficiently high.
