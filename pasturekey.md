@@ -2174,8 +2174,6 @@ endpoint  | measure    | attribute | method
 /getfcstats | FC       | median    | smoothed median from multiple capture dates
 /subpaddock | all      | median    | median from the requested product - see the notes in the /subpaddock endpoint for details |
 
-which reduces the noise created by partial captures and
-  variation in atmospheric conditions at capture time
 
 <sup>*</sup>For TSDM, the date-to-date variation in estimates can be high due
 to different atmospheric, soil moisture and cloud cover conditions.
