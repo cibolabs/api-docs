@@ -36,6 +36,8 @@ curl -s -X GET \
 }
 ```
 
+
+
 ### /gettsdmstats with a single Feature
 
 In this example, the geojson is supplied in the request's body.
@@ -325,6 +327,110 @@ curl -s -X POST \
 Response will be an image in PNG format. Below is an example:
 
 ![Example thumbnail](data_tsdmthumb.png)
+
+### Woody Area and Change endpoints
+
+The Woody Change endpoints provide information on the area of woody vegetation
+state for an area of interest, and how that's changed over time.
+
+The vegetation states are:
+- **Non Woody** — no woody vegetation
+- **Primary Woodland / Primary Forest** — undisturbed woody vegetation (never cleared)
+- **Secondary Woodland / Secondary Forest** — woody vegetation regenerated after a disturbance
+
+Transitions between these states occur between analysis periods, defined
+by a start year and end year. For example, between 2020 and 2021.
+
+
+#### Woody workflow
+
+TODO: Add workflow:
+- get list of change years
+- request woody data for a year
+- use the histograms and change classes for finer-grained analysis
+
+#### /getwoodychangeyears
+
+Returns the list of years for which a woody change analysis is available.
+The year is the second year in the change analysis and is the state of
+woody vegetation in the landscape in that year.
+
+**Request**
+
+GET https://data.afm.cibolabs.com/getwoodychangeyears
+
+```bash
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.afm.cibolabs.com/getwoodychangeyears"
+```
+
+**Response**
+
+```json
+{
+  "dates": [
+    "1991", "1992", "1995", "1998", "2000", "2002", "2004",
+    "2005", "2006", "2007", "2008", "2009", "2010", "2011",
+    "2012", "2013", "2014", "2015", "2016", "2017", "2018",
+    "2019", "2020", "2021", "2022"
+  ]
+}
+```
+
+#### /getwoodychangestats
+
+TBD.
+
+- TODO: provide example that shows woody area and change results.
+- TODO: histogram usage - refer to workflow example
+
+#### /getwoodychangeclasses
+
+Returns the full list of Woody Change Classes — the coded classification of
+woody vegetation state transitions between a start year and an end
+year. Each class has:
+- integer `code`, which corresponds to the histogram bin in /getwoodychangestats
+- a `startyear` label (vegetation state at the start year)
+- and an `endyear` label (vegetation state at the end year).
+
+**Request**
+
+GET https://data.afm.cibolabs.com/getwoodychangeclasses
+
+```bash
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.afm.cibolabs.com/getwoodychangeclasses"
+```
+
+**Response**
+
+```json
+{
+  "classes": [
+    {"code": 0,  "startyear": "Non Woody",          "endyear": "Non Woody"},
+    {"code": 1,  "startyear": "Primary Woodland",   "endyear": "Non Woody"},
+    {"code": 2,  "startyear": "Primary Forest",     "endyear": "Non Woody"},
+    {"code": 3,  "startyear": "Secondary Woodland", "endyear": "Non Woody"},
+    {"code": 4,  "startyear": "Secondary Forest",   "endyear": "Non Woody"},
+    {"code": 6,  "startyear": "Primary Woodland",   "endyear": "Primary Woodland"},
+    {"code": 7,  "startyear": "Primary Forest",     "endyear": "Primary Woodland"},
+    {"code": 11, "startyear": "Primary Woodland",   "endyear": "Primary Forest"},
+    {"code": 12, "startyear": "Primary Forest",     "endyear": "Primary Forest"},
+    {"code": 15, "startyear": "Non Woody",          "endyear": "Secondary Woodland"},
+    {"code": 18, "startyear": "Secondary Woodland", "endyear": "Secondary Woodland"},
+    {"code": 19, "startyear": "Secondary Forest",   "endyear": "Secondary Woodland"},
+    {"code": 20, "startyear": "Non Woody",          "endyear": "Secondary Forest"},
+    {"code": 23, "startyear": "Secondary Woodland", "endyear": "Secondary Forest"},
+    {"code": 24, "startyear": "Secondary Forest",   "endyear": "Secondary Forest"}
+  ]
+}
+```
 
 
 ## Chaining
