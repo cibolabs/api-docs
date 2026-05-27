@@ -77,13 +77,13 @@ echo "--- Pasture Key: paddock geometries ---"
 
 GEOM_FILE="geom_${FARMID}.json"
 
-#curl -s -X POST \
-#    -H "Content-Type: application/json" \
-#    -H "Authorization: Bearer ${TOKEN}" \
-#    "${PKEY_BASE}/geom/${FARMID}" \
-#    | jq '.' > "${GEOM_FILE}"
-#
-#echo "Saved to ${GEOM_FILE}"
+curl -s -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "${PKEY_BASE}/geom/${FARMID}" \
+    | jq '.' > "${GEOM_FILE}"
+
+echo "Saved to ${GEOM_FILE}"
 
 # ---------------------------------------------------------------------------
 # AFM: find the most recent woody change year
