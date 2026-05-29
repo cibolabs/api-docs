@@ -11,12 +11,13 @@
 #
 # Workflow:
 #   1. Authenticate to get an access token
-#   2. Call Pasture Key /geom to get a GeoJSON with the farm's paddock geometries
-#   3. Call Pasture Key /getimagedates to find the latest 20 satellite image dates
-#   4. Call Pasture Key /gettsdmstats to populate the geomtry with the latest 20 dates of TSDM data
-#   5. Call AFM /getwoodychangeyears to find the most recent 2 years of woody data
-#   6. Call AFM /getwoodychangestats, to populate the geometry with the most recent 2 years of woody data.
-#   7. Print the result
+#   2. Call Pasture Key /getimagedates to find the latest 20 satellite image dates
+#   3. Call Pasture Key /gettsdmstats to get the latest 20 dates of TSDM data
+#   4. Call Pasture Key /geom to attach the TSDM stats to the farm's paddock geometries as GeoJSON
+#   5. Call AFM /getwoodychangeyears to find the most recent 3 years of woody data
+#   6. Call AFM /getwoodychangestats to populate the geometry with the most recent 3 years of woody data
+#   7. Save the result to a file
+
 #
 # Prerequisites:
 #   - curl    (https://curl.se)
@@ -128,7 +129,7 @@ curl -s -X POST \
 echo "Saved to ${GEOM_FILE}"
 
 # ---------------------------------------------------------------------------
-# AFM: find the most three most recent woody change analysis years
+# AFM: find the three most recent woody change analysis years
 # ---------------------------------------------------------------------------
 
 echo ""

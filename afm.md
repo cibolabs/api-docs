@@ -36,8 +36,6 @@ curl -s -X GET \
 }
 ```
 
-
-
 ### /gettsdmstats with a single Feature
 
 In this example, the geojson is supplied in the request's body.
@@ -345,7 +343,7 @@ When using the woody endpoints, a typical workflow is:
 - get list of change years using `/getwoodychangeyears`
 - request the area of change within a Feature for each vegetation class
   using `/getwoodychangestats`
-- histograms are returned for more detailed analysis of the other change
+- histograms are returned for more detailed analysis of the other
   change classes; the mapping from bins to class names are returned
   by `/getwoodychangeclasses`
 
