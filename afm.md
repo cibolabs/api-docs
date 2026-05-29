@@ -326,6 +326,335 @@ Response will be an image in PNG format. Below is an example:
 
 ![Example thumbnail](data_tsdmthumb.png)
 
+### Woody Area and Change endpoints
+
+The Woody Change endpoints provide information on the area of woody vegetation
+state for an area of interest, and how that's changed over time.
+
+The vegetation states are:
+- **Non Woody** — no woody vegetation
+- **Primary Woodland / Primary Forest** — undisturbed woody vegetation (never cleared)
+- **Secondary Woodland / Secondary Forest** — woody vegetation regenerated after a disturbance
+
+Transitions between these states occur between analysis periods, defined
+by a start year and end year. For example, between 2020 and 2021.
+
+When using the woody endpoints, a typical workflow is:
+- get list of change years using `/getwoodychangeyears`
+- request the area of change within a Feature for each vegetation class
+  using `/getwoodychangestats`
+- histograms are returned for more detailed analysis of the other
+  change classes; the mapping from bins to class names are returned
+  by `/getwoodychangeclasses`
+
+#### /getwoodychangeyears
+
+Returns the list of years for which a woody change analysis is available.
+The year is the second year in the change analysis and is the state of
+woody vegetation in the landscape in that year.
+
+**Request**
+
+GET https://data.afm.cibolabs.com/getwoodychangeyears
+
+```bash
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.afm.cibolabs.com/getwoodychangeyears"
+```
+
+**Response**
+
+```json
+{
+  "dates": [
+    "1991", "1992", "1995", "1998", "2000", "2002", "2004",
+    "2005", "2006", "2007", "2008", "2009", "2010", "2011",
+    "2012", "2013", "2014", "2015", "2016", "2017", "2018",
+    "2019", "2020", "2021", "2022"
+  ]
+}
+```
+
+#### /getwoodychangestats
+
+Returns zonal statistics for woody vegetation area and change for a given
+area of interest, for each year between `startyear` and `endyear`. Statistics
+include total woody area, primary forest loss, primary woodland loss,
+secondary forest loss, and secondary woodland loss — all in hectares.
+
+**Parameters**
+
+- `startyear` — start of the year range (YYYY). Defaults to `endyear` if
+  omitted.
+- `endyear` — end of the year range (YYYY). Defaults to the current year if
+  omitted. If neither `startyear` nor `endyear` is provided, the response
+  covers only the current year.
+- `reportby` — optional. Set to `unique` to calculate statistics for each
+  feature in the FeatureCollection independently, instead of aggregating all
+  features together. When specified, the output has `aggregate: "no"`,
+  otherwise it is `"yes"`.
+
+
+**Example 1: default aggregate mode (FeatureCollection)**
+
+**Request**
+
+POST https://data.afm.cibolabs.com/getwoodychangestats?startyear=2022&endyear=2022
+
+```bash
+geojson_file="your_area_of_interest.geojson"
+geojson=$(cat "$geojson_file")
+startyear="2022"
+endyear="2022"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$geojson" \
+    "https://data.afm.cibolabs.com/getwoodychangestats?startyear=$startyear&endyear=$endyear"
+```
+
+**Body**
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "paddock_a" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "paddock_b" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    }
+  ]
+}
+```
+
+**Response**
+
+Notes:
+- The stats returned in each feature are identical and represent the
+  aggregate stats across all input features — you only need to read the
+  stats from the first feature
+- `aggregate: "yes"` indicates the aggregated mode was used
+- `changeyears` is the number of years in the underlying analysis window;
+  if `date` is `2022` and `changeyears` is `2`, the analysis period is 2020-2022
+- The `histogram` bin indices correspond to the `code` values in
+  `/getwoodychangeclasses`
+
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_a",
+        "aggregate": "yes",
+        "stats": [
+          {
+            "measure": "woody",
+            "unit": "ha",
+            "dates": ["2022"],
+            "captured": [98.5],
+            "changeyears": [2],
+            "histogram": [[8203, 0, 0, 312, 0, 0, 441, 0, 0, 0, 0, 187, 0, 0, 0, 0, 0, 0, 2648, 0, 0, 0, 0, 0, 0]],
+            "woody": [1420.3],
+            "primary_forest_loss": [18.2],
+            "primary_woodland_loss": [11.4],
+            "secondary_forest_loss": [24.7],
+            "secondary_woodland_loss": [9.1],
+            "area": 3832.76
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_b",
+        "aggregate": "yes",
+        "stats": [
+          {
+            "measure": "woody",
+            "unit": "ha",
+            "dates": ["2022"],
+            "captured": [98.5],
+            "changeyears": [2],
+            "histogram": [[8203, 0, 0, 312, 0, 0, 441, 0, 0, 0, 0, 187, 0, 0, 0, 0, 0, 0, 2648, 0, 0, 0, 0, 0, 0]],
+            "woody": [1420.3],
+            "primary_forest_loss": [18.2],
+            "primary_woodland_loss": [11.4],
+            "secondary_forest_loss": [24.7],
+            "secondary_woodland_loss": [9.1],
+            "area": 3832.76
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    }
+  ]
+}
+```
+
+**Example 2: per-feature stats with `reportby=unique`**
+
+**Request**
+
+POST https://data.afm.cibolabs.com/getwoodychangestats?startyear=2022&endyear=2022&reportby=unique
+
+```bash
+geojson_file="your_area_of_interest.geojson"
+geojson=$(cat "$geojson_file")
+startyear="2022"
+endyear="2022"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$geojson" \
+    "https://data.afm.cibolabs.com/getwoodychangestats?startyear=$startyear&endyear=$endyear&reportby=unique"
+```
+
+**Body**
+
+Same FeatureCollection as Example 1.
+
+**Response**
+
+Notes:
+- Each feature receives its own independently computed statistics
+- `aggregate: "no"` indicates per-feature mode was used
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_a",
+        "aggregate": "no",
+        "stats": [
+          {
+            "measure": "woody",
+            "unit": "ha",
+            "dates": ["2022"],
+            "captured": [97.1],
+            "changeyears": [2],
+            "histogram": [[4102, 0, 0, 198, 0, 0, 221, 0, 0, 0, 0, 94, 0, 0, 0, 0, 0, 0, 1324, 0, 0, 0, 0, 0, 0, 0]],
+            "woody": [712.4],
+            "primary_forest_loss": [9.1],
+            "primary_woodland_loss": [5.7],
+            "secondary_forest_loss": [12.3],
+            "secondary_woodland_loss": [4.6],
+            "area": 1916.38
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_b",
+        "aggregate": "no",
+        "stats": [
+          {
+            "measure": "woody",
+            "unit": "ha",
+            "dates": ["2022"],
+            "captured": [99.8],
+            "changeyears": [2],
+            "histogram": [[4101, 0, 0, 114, 0, 0, 220, 0, 0, 0, 0, 93, 0, 0, 0, 0, 0, 0, 1324, 0, 0, 0, 0, 0, 0, 0]],
+            "woody": [707.9],
+            "primary_forest_loss": [9.1],
+            "primary_woodland_loss": [5.7],
+            "secondary_forest_loss": [12.4],
+            "secondary_woodland_loss": [4.5],
+            "area": 1916.38
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    }
+  ]
+}
+```
+
+
+#### /getwoodychangeclasses
+
+Returns the full list of Woody Change Classes — the coded classification of
+woody vegetation state transitions between a start year and an end
+year. Each class has:
+- integer `code`, which corresponds to the histogram bin in /getwoodychangestats
+- a `startyear` label (vegetation state at the start year)
+- and an `endyear` label (vegetation state at the end year).
+
+**Request**
+
+GET https://data.afm.cibolabs.com/getwoodychangeclasses
+
+```bash
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.afm.cibolabs.com/getwoodychangeclasses"
+```
+
+**Response**
+
+```json
+{
+  "classes": [
+    {"code": 0,  "startyear": "Non Woody",          "endyear": "Non Woody"},
+    {"code": 1,  "startyear": "Primary Woodland",   "endyear": "Non Woody"},
+    {"code": 2,  "startyear": "Primary Forest",     "endyear": "Non Woody"},
+    {"code": 3,  "startyear": "Secondary Woodland", "endyear": "Non Woody"},
+    {"code": 4,  "startyear": "Secondary Forest",   "endyear": "Non Woody"},
+    {"code": 6,  "startyear": "Primary Woodland",   "endyear": "Primary Woodland"},
+    {"code": 7,  "startyear": "Primary Forest",     "endyear": "Primary Woodland"},
+    {"code": 11, "startyear": "Primary Woodland",   "endyear": "Primary Forest"},
+    {"code": 12, "startyear": "Primary Forest",     "endyear": "Primary Forest"},
+    {"code": 15, "startyear": "Non Woody",          "endyear": "Secondary Woodland"},
+    {"code": 18, "startyear": "Secondary Woodland", "endyear": "Secondary Woodland"},
+    {"code": 19, "startyear": "Secondary Forest",   "endyear": "Secondary Woodland"},
+    {"code": 20, "startyear": "Non Woody",          "endyear": "Secondary Forest"},
+    {"code": 23, "startyear": "Secondary Woodland", "endyear": "Secondary Forest"},
+    {"code": 24, "startyear": "Secondary Forest",   "endyear": "Secondary Forest"}
+  ]
+}
+```
+
 
 ## Chaining
 
@@ -529,6 +858,11 @@ The response also contains an "aggregate=yes" property.
 
 To calculate statistics for multiple features individually, you must
 call the API multiple times, passing a single feature in each request.
+
+With the exception of `/getwoodychangestats`, which supports the
+`reportby=unique` parameter to calculate statistics for each feature
+independently in a single call — see the `/getwoodychangestats` section
+above for details.
 
 ### Handling the response time-out limit of 30 seconds
 
