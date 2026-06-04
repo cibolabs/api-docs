@@ -128,11 +128,18 @@ Notes:
 
 ### /gettsdmstats with a FeatureCollection
 
+**Parameters**
+
+- `reportby` — optional. Set to `unique` to calculate statistics for each
+  feature in the FeatureCollection independently, instead of aggregating all
+  features together. When specified, the output has `aggregate: "no"`,
+  otherwise it is `"yes"`.
+
+**Example 1: default aggregate mode**
+
 If the input geojson is a FeatureCollection with multiple Features,
 the API aggregates all geometries together and computes one set
-of statistics. 
-
-If you want statistics for single feature, you must call the API multiple times, passing just a single feature. 
+of statistics.
 
 **Request**
 
@@ -192,10 +199,10 @@ Notes:
 - The stats returned in each feature are identical,
   and represent the aggregate stats, so you only need to read
   the stats from the first feature
-- The response also includes the ‘aggregate’: ‘yes’ property 
-- captured is the percentage of the aggregated’ geometry’s area that
-  is unaffected by cloud or water and within the territory’s extent
-- area is the area of the aggregated geometries in hectares 
+- The response also includes the `aggregate: "yes"` property
+- `captured` is the percentage of the aggregated geometry's area that
+  is unaffected by cloud or water and within the territory's extent
+- `area` is the area of the aggregated geometries in hectares
 
 ```json
 { 
@@ -205,7 +212,7 @@ Notes:
       "type": "Feature", 
       "properties": { 
         "name": "feature_a", 
-        "aggregate": "yes" 
+        "aggregate": "yes", 
         "stats": [ 
           { 
             "measure": "tsdm", 
@@ -230,41 +237,168 @@ Notes:
         "coordinates": [ 
         ... 
        ] 
+      } 
     }, 
-    "type": "Feature", 
-    "properties": { 
-      "name": "feature_b", 
-      "aggregate": "yes" 
-      "stats": [ 
-        { 
-          "measure": "tsdm", 
-          "unit": "kg/ha", 
-          "dates": ["20250101", "20250106", ...], 
-          "captured": [100, 98, ...], 
-          "median": [2612, 2631, ...], 
-          "mean": [2453, 2489, ...], 
-          "std": [876, 891, ...], 
-          "p5": [301, 312, ...], 
-          "p10": [354, 362, ...], 
-          "p25": [1987, 1999, ...], 
-          "p75": [3001, 3053, ...], 
-          "p90": [3122, 3150, ...], 
-          "p95": [3182, 3198, ...], 
-          "area": 3832.76 
-        }  
-      ] 
-    }, 
-    "geometry": { 
-      "type": "MultiPolygon", 
-      "coordinates": [ 
-        ... 
-      ] 
+    { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "feature_b", 
+        "aggregate": "yes", 
+        "stats": [ 
+          { 
+            "measure": "tsdm", 
+            "unit": "kg/ha", 
+            "dates": ["20250101", "20250106", ...], 
+            "captured": [100, 98, ...], 
+            "median": [2612, 2631, ...], 
+            "mean": [2453, 2489, ...], 
+            "std": [876, 891, ...], 
+            "p5": [301, 312, ...], 
+            "p10": [354, 362, ...], 
+            "p25": [1987, 1999, ...], 
+            "p75": [3001, 3053, ...], 
+            "p90": [3122, 3150, ...], 
+            "p95": [3182, 3198, ...], 
+            "area": 3832.76 
+          }  
+        ] 
+      }, 
+      "geometry": { 
+        "type": "MultiPolygon", 
+        "coordinates": [ 
+          ... 
+        ] 
+      } 
     } 
   ]
 }
 ```
 
-### /gettsdmthumbail
+**Example 2: per-feature stats with `reportby=unique`**
+
+> **Important:** All features in a single `reportby=unique` request must be
+> in close proximity to each other. If your features are spread across
+> different locations, split them into separate requests — one per geographic
+> clump. Passing dispersed features is likely to produce zeroes, nulls, or
+> very small `count` values (the number of pixels sampled to compute the
+> stats).
+
+**Request**
+
+POST https://data.afm.cibolabs.com/gettsdmstats?startdate=20250101&enddate=20250430&percentiles=5,95&reportby=unique
+
+```bash
+geojson_file="your_area_of_interest.geojson"
+geojson=$(cat "$geojson_file")
+startdate="20250101"
+enddate="20250430"
+percentiles="5,95"
+reportby="unique"
+
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$geojson" \
+    "https://data.afm.cibolabs.com/gettsdmstats?startdate=$startdate&enddate=$enddate&percentiles=$percentiles&reportby=$reportby" 
+```
+
+**Body**
+
+Same FeatureCollection as Example 1.
+
+**Response**
+
+Notes:
+- Each feature receives its own independently computed statistics
+- `aggregate: "no"` indicates per-feature mode was used
+
+```json
+{ 
+  "type": "FeatureCollection", 
+  "features": [ 
+    { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "feature_a", 
+        "aggregate": "no", 
+        "stats": [ 
+          { 
+            "measure": "tsdm", 
+            "unit": "kg/ha", 
+            "dates": ["20250101", "20250106", ...], 
+            "captured": [100, 98, ...], 
+            "median": [2612, 2631, ...], 
+            "mean": [2453, 2489, ...], 
+            "std": [876, 891, ...], 
+            "p5": [301, 312, ...], 
+            "p10": [354, 362, ...], 
+            "p25": [1987, 1999, ...], 
+            "p75": [3001, 3053, ...], 
+            "p90": [3122, 3150, ...], 
+            "p95": [3182, 3198, ...], 
+            "area": 1916.38 
+          }  
+        ] 
+      }, 
+      "geometry": { 
+        "type": "Polygon", 
+        "coordinates": [ 
+        ... 
+       ] 
+      } 
+    }, 
+    { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "feature_b", 
+        "aggregate": "no", 
+        "stats": [ 
+          { 
+            "measure": "tsdm", 
+            "unit": "kg/ha", 
+            "dates": ["20250101", "20250106", ...], 
+            "captured": [95, 93, ...], 
+            "median": [1845, 1892, ...], 
+            "mean": [1712, 1756, ...], 
+            "std": [654, 672, ...], 
+            "p5": [214, 228, ...], 
+            "p10": [267, 280, ...], 
+            "p25": [1342, 1389, ...], 
+            "p75": [2178, 2203, ...], 
+            "p90": [2341, 2367, ...], 
+            "p95": [2412, 2438, ...], 
+            "area": 1916.38 
+          }  
+        ] 
+      }, 
+      "geometry": { 
+        "type": "Polygon", 
+        "coordinates": [ 
+        ... 
+       ] 
+      } 
+    } 
+  ]
+}
+```
+
+### /gettsdmgreenstats
+
+See the /gettsdmstats examples above.
+
+### /gettsdmdeadstats
+
+See the /gettsdmstats examples above.
+
+### /getfcstats
+
+See the /gettsdmstats examples above.
+
+The response contains three statistics objects per Feature. One each for
+fcbare, fcgreen and fcdead.
+
+### /gettsdmthumbnail
 
 The thumbnail endpoints return a PNG format image. Some endpoints take a point and a buffer size and others
 take a GeoJSON in the POST body - please check the swagger docs for these details. It is important that
@@ -272,7 +406,7 @@ you specify the `Accept: image/png` HTTP header so that the response is formatte
 
 **Request**
 
-POST https://data.afm.cibolabs.com/gettsdmthumbail
+POST https://data.afm.cibolabs.com/gettsdmthumbnail
 
 ```bash
 geojson_file="your_area_of_interest.geojson"
@@ -284,7 +418,7 @@ curl -s -X POST \
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Accept: image/png" \
     -d "$geojson" \
-    "https://data.afm.cibolabs.com/gettsdmthumbail" 
+    "https://data.afm.cibolabs.com/gettsdmthumbnail" 
 ```
 
 
@@ -519,6 +653,13 @@ Notes:
 ```
 
 **Example 2: per-feature stats with `reportby=unique`**
+
+> **Important:** All features in a single `reportby=unique` request must be
+> in close proximity to each other. If your features are spread across
+> different locations, split them into separate requests — one per geographic
+> clump. Passing dispersed features is likely to produce zeroes, nulls, or
+> very small `count` values (the number of pixels sampled to compute the
+> stats).
 
 **Request**
 
@@ -846,7 +987,11 @@ tsdm, tsdmgreen, tsdmdead and fc.
 - /getrain followed by any number of /get[name]stats 
 - /getpointrain followed by any number of /get[name]stats 
 
-## Handling special cases
+Note: `/get[name]stats` each support `reportby=unique` and
+must be passed the parameter independently on each call in a chain. `/getrain`
+does not support `reportby=unique`. 
+
+## Troubleshooting
 
 ### Calculating statistics for multiple features
 
@@ -856,13 +1001,11 @@ The statistics are identical for every feature in the response. So you only
 need to read the statistics from the first feature in the response.
 The response also contains an "aggregate=yes" property.
 
-To calculate statistics for multiple features individually, you must
-call the API multiple times, passing a single feature in each request.
-
-With the exception of `/getwoodychangestats`, which supports the
-`reportby=unique` parameter to calculate statistics for each feature
-independently in a single call — see the `/getwoodychangestats` section
-above for details.
+To calculate statistics for multiple features individually, use the
+`reportby=unique` query parameter — each Feature in the FeatureCollection
+receives its own independently computed statistics. See the individual
+endpoint sections for details. Alternatively, call the API multiple times,
+passing a single feature in each request.
 
 ### Handling the response time-out limit of 30 seconds
 
