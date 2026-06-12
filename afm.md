@@ -1007,66 +1007,8 @@ receives its own independently computed statistics. See the individual
 endpoint sections for details. Alternatively, call the API multiple times,
 passing a single feature in each request.
 
-### Handling the response time-out limit of 30 seconds
+### Timeouts and size limits
 
-The API has a time-out period of 30 seconds. You may need to shorten the
-time-period (`startdate` and `enddate` parameters) of your request, and
-make multiple calls to the API.
-
-If you wish, you may chain the requests with different start and end dates.
-A new stats object for the second request is appended to the stats
-list of the Feature's properties.
-
-For example. Your first request to `/gettsdmstats` is for the year 2023
-(`startdate=20230101&enddate=20231231`). The response is chained with a 
-second request to `gettdsmstats` for the year 2024
-(`startdate=20240101&enddate=20241231`). The output contains two stats objects
-in the stats list, one for each year.
-
-```json
-{ 
-  "type": "Feature", 
-  "properties": { 
-    "name": "feature_a",
-    "aggregate": "yes",
-    "stats": [ 
-      { 
-        "measure": "tsdm", 
-        "unit": "kg/ha",
-        "area": 7850.393436441231
-        "dates": [
-              "20230104",
-              "20230109",
-              ...,
-              "20231230"
-        ],
-        ... 
-      }, 
-      { 
-        "measure": "tsdm", 
-        "unit": "kg/ha", 
-        "area": 7850.393436441231
-        "dates": [
-              "20240104",
-              "20240109",
-              ...,
-              "20241230"
-        ],
-        ...
-      }  
-    ] 
-  }, 
-  "geometry": { 
-    "type": "Polygon", 
-    "coordinates": [ 
-      ... 
-    ] 
-  }
-}
-```
-
-### Handling the request and response size limit of 6 MB
-
-The maximum size of a request's body or the response is 6MB.
-This cannot be increased. You must restructure your requests if
-you hit this limit.
+The API has a 30-second timeout and a 6 MB limit on both request bodies and responses.
+See [Troubleshooting](troubleshooting.md) for details, solutions, and an example of splitting
+a long date range across multiple chained requests.
