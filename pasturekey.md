@@ -969,7 +969,7 @@ use the closest date, within 10 days, if there is one.
 
 Limitation: The body must be less than 6 MB.
 If this is exceeded, split the property (e.g. 'east' and 'west') and
-make multiple requests.
+make multiple requests. See [Troubleshooting](troubleshooting.md).
 
 ```json
 { 
