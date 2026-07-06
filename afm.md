@@ -991,6 +991,8 @@ Note: `/get[name]stats` each support `reportby=unique` and
 must be passed the parameter independently on each call in a chain. `/getrain`
 does not support `reportby=unique`. 
 
+See `examples/afm_stats.sh`.
+
 ## Troubleshooting
 
 ### Calculating statistics for multiple features
