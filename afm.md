@@ -800,6 +800,7 @@ curl -s -X GET \
 
 Returns a list of seasons that can then be passed in a request to `/getseasonalfcstats` (below).
 These seasons are in the format `YYYYMM` and define the end year and month of the 3 month season.
+For example, 199402 is for the three months December 1993 to February 1994 (southern hemisphere summer).
 
 ** Request **
 
@@ -836,7 +837,7 @@ area of interest, for each season between `startdate` and `enddate`.
 
 **Parameters**
 
-- `startdate` — start of the season range (YYYYMMDD). Defaults to 13 months
+- `startdate` — start of the season range (YYYYMMDD). Defaults to 2 years
   before `enddate` if omitted.
 - `enddate` — end of the season range (YYYYMMDD). Defaults to the current date if
   omitted. 
@@ -863,7 +864,7 @@ curl -s -X POST \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${TOKEN}" \
     -d "$geojson" \
-    "https://data.afm.cibolabs.com/getwoodychangestats?startdate=$startdate&enddate=$enddate"
+    "https://data.afm.cibolabs.com/getseasonalfcstats?startdate=$startdate&enddate=$enddate"
 ```
 
 **Body**
@@ -1045,7 +1046,7 @@ Notes:
 
 **Request**
 
-POST https://data.afm.cibolabs.com/getwoodychangestats?startdate=20240601&enddate=20240801&reportby=unique
+POST https://data.afm.cibolabs.com/getseasonalfcstats?startdate=20240601&enddate=20240801&reportby=unique
 
 ```bash
 geojson_file="your_area_of_interest.geojson"
@@ -1057,7 +1058,7 @@ curl -s -X POST \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${TOKEN}" \
     -d "$geojson" \
-    "https://data.afm.cibolabs.com/getwoodychangestats?startdate=$startdate&enddate=$enddate&reportby=unique"
+    "https://data.afm.cibolabs.com/getseasonalfcstats?startdate=$startdate&enddate=$enddate&reportby=unique"
 ```
 
 **Body**
