@@ -796,6 +796,410 @@ curl -s -X GET \
 }
 ```
 
+#### /getseasons
+
+Returns a list of seasons that can then be passed in a request to `/getseasonalfcstats` (below).
+These seasons are in the format `YYYYMM` and define the end year and month of the 3 month season.
+
+** Request **
+
+GET https://data.afm.cibolabs.com/getseasons
+
+```bash
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.afm.cibolabs.com/getseasons"
+```
+
+
+**Response**
+
+```json
+{
+  "dates": [
+    "198802",
+    "198805",
+    "198808",
+    "198811",
+    "198902",
+    "198905"
+  ]
+}
+```
+
+#### /getseasonalfcstats
+
+Returns zonal statistics for seasonal fractional cover for a given
+area of interest, for each season between `startdate` and `enddate`. 
+
+**Parameters**
+
+- `startdate` — start of the season range (YYYYMMDD). Defaults to 13 months
+  before `enddate` if omitted.
+- `enddate` — end of the season range (YYYYMMDD). Defaults to the current date if
+  omitted. 
+- `reportby` — optional. Set to `unique` to calculate statistics for each
+  feature in the FeatureCollection independently, instead of aggregating all
+  features together. When specified, the output has `aggregate: "no"`,
+  otherwise it is `"yes"`.
+- `histogram` — optional. Set to `yes` to return the histogram of the FC
+  measures with each stats object. 
+
+**Example 1: default aggregate mode (FeatureCollection)**
+
+**Request**
+
+POST https://data.afm.cibolabs.com/getseasonalfcstats?startdate=20240601&enddate=20240801
+
+```bash
+geojson_file="your_area_of_interest.geojson"
+geojson=$(cat "$geojson_file")
+startdate="20240601"
+enddate="20240801"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$geojson" \
+    "https://data.afm.cibolabs.com/getwoodychangestats?startdate=$startdate&enddate=$enddate"
+```
+
+**Body**
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "paddock_a" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "paddock_b" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    }
+  ]
+}
+```
+
+**Response**
+
+Notes:
+- The stats returned in each feature are identical and represent the
+  aggregate stats across all input features — you only need to read the
+  stats from the first feature
+- `aggregate: "yes"` indicates the aggregated mode was used
+- If provided (when `histogram=yes` is passed in as part of the query string), 
+  the `histogram` has 101 bins representing integer percentage 
+  values from 0 to 100 (inclusive)"
+
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_a",
+        "aggregate": "yes",
+        "stats": [
+          {
+            "unit": "%",
+            "measure": "seasonalfcbare",
+            "area": 311.3033663612648,
+            "dates": ["202408"],          
+            "captured": [100.0],
+            "count": [3454],
+            "mean": [25.810057887120117],
+            "std": [7.598444133689449],
+            "median": [28.0],
+            "p10": [10.0],
+            "p25": [17.0],
+            "p50": [28.0],
+            "p75": [33.0],
+            "p90": [36.0]
+          },
+          {
+            "area": 311.3033663612648,
+            "unit": "%",
+            "measure": "seasonalfcgreen",
+            "dates": ["202408"],
+            "captured": [100.0],
+            "count": [3454],
+            "mean": [30.857452966714906],
+            "std": [10.920973801171652],
+            "median": [28.0],
+            "p10": [17.0],
+            "p25": [19.25],
+            "p50": [28.0],
+            "p75": [43.0],
+            "p90": [51.0]              
+          },
+          {
+            "area": 311.3033663612648,
+            "unit": "%",
+            "measure": "seasonalfcdead",
+            "dates": ["202408"],
+            "captured": [100.0],
+            "count": [3454],
+            "mean": [41.39544138929088],
+            "std": [4.695534048491664],
+            "median": [42.0],
+            "p10": [33.0],
+            "p25": [36.0],
+            "p50": [42.0],
+            "p75": [46.0],
+            "p90": [50.0]
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_b",
+        "aggregate": "yes",
+        "stats": [
+          {
+            "unit": "%",
+            "measure": "seasonalfcbare",
+            "area": 311.3033663612648,
+            "dates": ["202408"],          
+            "captured": [100.0],
+            "count": [3454],
+            "mean": [25.810057887120117],
+            "std": [7.598444133689449],
+            "median": [28.0],
+            "p10": [10.0],
+            "p25": [17.0],
+            "p50": [28.0],
+            "p75": [33.0],
+            "p90": [36.0]
+          },
+          {
+            "area": 311.3033663612648,
+            "unit": "%",
+            "measure": "seasonalfcgreen",
+            "dates": ["202408"],
+            "captured": [100.0],
+            "count": [3454],
+            "mean": [30.857452966714906],
+            "std": [10.920973801171652],
+            "median": [28.0],
+            "p10": [17.0],
+            "p25": [19.25],
+            "p50": [28.0],
+            "p75": [43.0],
+            "p90": [51.0]              
+          },
+          {
+            "area": 311.3033663612648,
+            "unit": "%",
+            "measure": "seasonalfcdead",
+            "dates": ["202408"],
+            "captured": [100.0],
+            "count": [3454],
+            "mean": [41.39544138929088],
+            "std": [4.695534048491664],
+            "median": [42.0],
+            "p10": [33.0],
+            "p25": [36.0],
+            "p50": [42.0],
+            "p75": [46.0],
+            "p90": [50.0]
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    }
+  ]
+}
+```
+
+**Example 2: per-feature stats with `reportby=unique`**
+
+> **Important:** All features in a single `reportby=unique` request must be
+> in close proximity to each other. If your features are spread across
+> different locations, split them into separate requests — one per geographic
+> clump. Passing dispersed features is likely to produce zeroes, nulls, or
+> very small `count` values (the number of pixels sampled to compute the
+> stats).
+
+**Request**
+
+POST https://data.afm.cibolabs.com/getwoodychangestats?startdate=20240601&enddate=20240801&reportby=unique
+
+```bash
+geojson_file="your_area_of_interest.geojson"
+geojson=$(cat "$geojson_file")
+startdate="20240601"
+enddate="20240801"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$geojson" \
+    "https://data.afm.cibolabs.com/getwoodychangestats?startdate=$startdate&enddate=$enddate&reportby=unique"
+```
+
+**Body**
+
+Same FeatureCollection as Example 1.
+
+**Response**
+
+Notes:
+- Each feature receives its own independently computed statistics
+- `aggregate: "no"` indicates per-feature mode was used
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_a",
+        "aggregate": "no",
+        "stats": [
+{
+            "measure": "seasonalfcbare",
+            "unit": "%",
+            "area": 134.93551535704967,
+            "dates": ["202408"],
+            "captured": [100.0],
+            "count": [1499],
+            "mean": [22.74021648626145],
+            "std": [6.687315564699815],
+            "median": [22.0],
+            "p10": [11.0],
+            "p25": [16.0],
+            "p50": [22.0],
+            "p75": [30.0],
+            "p90": [34.0]
+          },
+          {
+            "measure": "seasonalfcgreen",
+            "unit": "%",
+            "area": 134.93551535704967,
+            "dates": ["202408"],
+            "captured": [100.0],
+            "count": [1499],
+            "mean": [38.15986677768526],
+            "std": [8.808694212961182],
+            "median": [40.0],
+            "p10": [22.0],
+            "p25": [28.0],
+            "p50": [40.0],
+            "p75": [47.0],
+            "p90": [53.0]
+          },
+          {
+            "measure": "seasonalfcdead",
+            "unit": "%",
+            "area": 134.93551535704967,
+            "dates": ["202408"],
+            "captured": [100.0],
+            "count": [1499],
+            "mean": [37.229808492922565],
+            "std": [3.163932467054421],
+            "median": [37.0],
+            "p10": [32.0],
+            "p25": [34.0],
+            "p50": [37.0],
+            "p75": [41.0],
+            "p90": [43.0]
+          }        
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_b",
+        "aggregate": "no",
+        "stats": [
+          {
+            "measure": "seasonalfcbare",
+            "unit": "%",
+            "area": 44.67924519129843,
+            "dates": ["202408"],
+            "captured": [100.0],
+            "count": [495],
+            "mean": [35.0176322418136],
+            "std": [2.1996545265196876],
+            "median": [35.0],
+            "p10": [31.0],
+            "p25": [33.0],
+            "p50": [35.0],
+            "p75": [37.0],
+            "p90": [41.0]
+          },
+          {
+            "measure": "seasonalfcgreen",
+            "unit": "%",
+            "area": 44.67924519129843,
+            "dates": ["202408"],
+            "captured": [100.0],
+            "count": [495],
+            "mean": [16.84382871536524],
+            "std": [1.1270851153801331],
+            "median": [17.0],
+            "p10": [15.0],
+            "p25": [16.0],
+            "p50": [17.0],
+            "p75": [18.0],
+            "p90": [19.0]
+          },
+          {
+            "measure": "seasonalfcdead",
+            "unit": "%",
+            "area": 44.67924519129843,
+            "dates": ["202408"],
+            "captured": [100.0],
+            "count": [495],
+            "mean": [46.566750629722925],
+            "std": [1.849147879397415],
+            "median": [47.0],
+            "p10": [42.0],
+            "p25": [45.0],
+            "p50": [47.0],
+            "p75": [48.0],
+            "p90": [50.0]
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    }
+  ]
+}
+```
+
 
 ## Chaining
 
