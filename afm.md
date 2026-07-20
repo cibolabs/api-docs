@@ -5,6 +5,13 @@
 See our [online AFM API docs](https://data.afm.cibolabs.com/swagger) for 
 the list of endpoints.
 
+## Most recent changes
+
+Date | Change | endpoints
+---- | ------ | --------
+2026-07-20 | Add /getseasons and /getseasonalfcstats for obtaining zonal statistics from the Seasonal Fractional Cover rasters| /getseasons, /getseasonalfcstats |
+
+
 ## Examples
 
 These examples use the curl program in a linux terminal
