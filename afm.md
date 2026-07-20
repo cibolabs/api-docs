@@ -802,7 +802,16 @@ curl -s -X GET \
   ]
 }
 ```
+### Seasonal Fractional Cover endpoints
 
+The Seasonal Fractional Cover endpoints allow zonal statistics to be collected for
+every season that the fractional cover is available for. The available seasons
+can be determined by calling the `/getseasons` endpoint.
+
+When using the  Seasonal Fractional Cover endpoints, a typical workflow is:
+- get list of seasons using `/getseasons`
+- request the zonal statistics within a Feature using `/getseasonalfcstats`
+  
 #### /getseasons
 
 Returns a list of seasons that can then be passed in a request to `/getseasonalfcstats` (below).
