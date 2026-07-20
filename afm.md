@@ -844,7 +844,7 @@ area of interest, for each season between `startdate` and `enddate`.
 
 **Parameters**
 
-- `startdate` — start of the season range (YYYYMMDD). Defaults to 2 years
+- `startdate` — start of the season range (YYYYMMDD). Defaults to 10 years
   before `enddate` if omitted.
 - `enddate` — end of the season range (YYYYMMDD). Defaults to the current date if
   omitted. 
