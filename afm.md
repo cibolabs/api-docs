@@ -21,7 +21,18 @@ to send requests to the API. They assume:
   (see the [Quick start](quickstart.md) for how to do this).
   The access token is stored in the `TOKEN` variable
 
-### /getimagedates 
+### Feedbase Monitor endpoints
+
+Feedbase Monitor endpoints calculate zonal statistics from the Cibolabs AFM products obtained from the Sentinel-2 satellite record. 
+Data are available every 5 days, starting 2017. Available dates can be obtained by calling the `/getimagedates` endpoint.
+
+When using the Feedbase Monitor endpoints, a typical workflow is:
+- get list of image dates using `/getimagedates`
+- Either request the zonal statistics within a Feature using the other
+  Feedbase Monitor statistics endpoints.
+- Or, retrieve a thumbnail using the Feedbase Monitor thumbnail endponts.
+
+#### /getimagedates 
 
 **Request**
 
@@ -43,7 +54,7 @@ curl -s -X GET \
 }
 ```
 
-### /gettsdmstats with a single Feature
+#### /gettsdmstats with a single Feature
 
 In this example, the geojson is supplied in the request's body.
 The geojson contains a single Feature.
@@ -133,7 +144,7 @@ Notes:
 } 
 ```
 
-### /gettsdmstats with a FeatureCollection
+#### /gettsdmstats with a FeatureCollection
 
 **Parameters**
 
@@ -390,25 +401,26 @@ Notes:
 }
 ```
 
-### /gettsdmgreenstats
+#### /gettsdmgreenstats
 
 See the /gettsdmstats examples above.
 
-### /gettsdmdeadstats
+#### /gettsdmdeadstats
 
 See the /gettsdmstats examples above.
 
-### /getfcstats
+#### /getfcstats
 
 See the /gettsdmstats examples above.
 
 The response contains three statistics objects per Feature. One each for
 fcbare, fcgreen and fcdead.
 
-### /gettsdmthumbnail
+#### /gettsdmthumbnail
 
 The thumbnail endpoints return a PNG format image. Some endpoints take a point and a buffer size and others
-take a GeoJSON in the POST body - please check the swagger docs for these details. It is important that
+take a GeoJSON in the POST body - please check the swagger docs for these details. It is also possible
+to specify a date for all of the thumbnail endpoints. It is important that
 you specify the `Accept: image/png` HTTP header so that the response is formatted properly.
 
 **Request**
@@ -804,9 +816,10 @@ curl -s -X GET \
 ```
 ### Seasonal Fractional Cover endpoints
 
-The Seasonal Fractional Cover endpoints allow zonal statistics to be collected for
-every season that the fractional cover is available for. The available seasons
-can be determined by calling the `/getseasons` endpoint.
+The Seasonal Fractional Cover endpoints calculate zonal statistics from seasonal estimates of 
+fractional cover obtained from the Landsat satellite record. There are 4 rasters per year, starting 1988. 
+
+The available seasons can be determined by calling the `/getseasons` endpoint.
 
 When using the  Seasonal Fractional Cover endpoints, a typical workflow is:
 - get list of seasons using `/getseasons`
