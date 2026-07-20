@@ -416,10 +416,11 @@ See the /gettsdmstats examples above.
 The response contains three statistics objects per Feature. One each for
 fcbare, fcgreen and fcdead.
 
-#### /gettsdmthumbnail
+#### Thumbnail Endpoints
 
 The thumbnail endpoints return a PNG format image. Some endpoints take a point and a buffer size and others
-take a GeoJSON in the POST body - please check the swagger docs for these details. It is also possible
+take a GeoJSON in the POST body - please check the swagger docs for these details and for the names
+of the thumbnail endpoints. It is also possible
 to specify a date for all of the thumbnail endpoints. It is important that
 you specify the `Accept: image/png` HTTP header so that the response is formatted properly.
 
