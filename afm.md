@@ -9,7 +9,8 @@ the list of endpoints.
 
 Date | Change | endpoints
 ---- | ------ | --------
-2026-07-20 | Add /getseasons and /getseasonalfcstats for obtaining zonal statistics from the Seasonal Fractional Cover rasters| /getseasons, /getseasonalfcstats |
+2026-07-20 | Add /getseasons and /getseasonalfcstats for obtaining zonal statistics from the Seasonal Fractional Cover rasters | /getseasons, /getseasonalfcstats |
+2026-07-27 | Add /getwoodycarbonyears and /getwoodycarbonstats for obtaining zonal statistics from the Woody Carbon rasters | /getwoodycarbonyears, /getwoodycarbonstats |
 
 
 ## Examples
@@ -1219,6 +1220,325 @@ Notes:
             "p50": [47.0],
             "p75": [48.0],
             "p90": [50.0]
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    }
+  ]
+}
+```
+
+### Woody Carbon endpoints
+
+The Woody Carbon endpoints calculate zonal statistics from yearly estimates of 
+woody cover. There is 1 raster per year starting in 2000. 
+
+The available years can be determined by calling the `/getwoodycarbonyears` endpoint.
+
+When using the Woody Carbon endpoints, a typical workflow is:
+- get list of years using `/getwoodycarbonyears`
+- request the zonal statistics within a Feature using `/getwoodycarbonstats`
+
+#### /getwoodycarbonyears
+
+Returns a list of years that can then be passed in a request to `/getwoodycarbonstats` (below).
+These years are in the format `YYYY` and define the year that the Woody Carbon startistics are for.
+
+
+** Request **
+
+GET https://data.afm.cibolabs.com/getwoodycarbonyears
+
+```bash
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    "https://data.afm.cibolabs.com/getwoodycarbonyears"
+```
+
+
+**Response**
+
+```json
+{
+  "dates": [
+    "2000",
+    "2001",
+    "2002",
+    "2003",
+    "2004",
+    "2005"
+  ]
+}
+```
+
+#### /getwoodycarbonstats
+
+Returns zonal statistics for Woody Carbon for a given
+area of interest, for each year between `startyear` and `endyear`. 
+
+**Parameters**
+
+- `startyear` — start of the year range (YYYY). Defaults to 20 years
+  before `endyear` if omitted.
+- `endyear` — end of the season range (YYYY). Defaults to the current year if
+  omitted. 
+- `reportby` — optional. Set to `unique` to calculate statistics for each
+  feature in the FeatureCollection independently, instead of aggregating all
+  features together. When specified, the output has `aggregate: "no"`,
+  otherwise it is `"yes"`.
+
+**Example 1: default aggregate mode (FeatureCollection)**
+
+**Request**
+
+POST https://data.afm.cibolabs.com/getwoodycarbonstats?startyear=2015&endyear2020
+
+```bash
+geojson_file="your_area_of_interest.geojson"
+geojson=$(cat "$geojson_file")
+startyear="2015"
+endyear="2020"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$geojson" \
+    "https://data.afm.cibolabs.com/getwoodycarbonstats?startyear=$startyear&endyear=$endyear"
+```
+
+**Body**
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "paddock_a" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "paddock_b" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    }
+  ]
+}
+```
+
+**Response**
+
+Notes:
+- The stats returned in each feature are identical and represent the
+  aggregate stats across all input features — you only need to read the
+  stats from the first feature
+- `aggregate: "yes"` indicates the aggregated mode was used
+
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_a",
+        "aggregate": "yes",
+        "stats": [
+          {
+            "area": 311.3033663612648,
+            "unit": "tonnes/ha",
+            "measure": "woodycarbon",
+            "dates": [
+              "2015",
+              "2016",
+              "2017",
+              "2018",
+              "2019"
+            ],
+            "captured": [
+              100.0,
+              100.0,
+              100.0,
+              100.0,
+              100.0
+            ],
+            "mean": [
+              0.03576638113642591,
+              0.061095298530148105,
+              0.11996693365747199,
+              0.06343392003587314,
+              0.09826488164225756
+            ]
+         }
+       ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_b",
+        "aggregate": "yes",
+        "stats": [    
+          {
+            "area": 311.3033663612648,
+            "unit": "tonnes/ha",
+            "measure": "woodycarbon",
+            "dates": [
+              "2015",
+              "2016",
+              "2017",
+              "2018",
+              "2019"
+            ],
+            "captured": [
+              100.0,
+              100.0,
+              100.0,
+              100.0,
+              100.0
+            ],
+            "mean": [
+              0.03576638113642591,
+              0.061095298530148105,
+              0.11996693365747199,
+              0.06343392003587314,
+              0.09826488164225756
+            ]
+         }
+        ]
+      }
+    }
+  ]
+}    
+```
+
+**Example 2: per-feature stats with `reportby=unique`**
+
+> **Important:** All features in a single `reportby=unique` request must be
+> in close proximity to each other. If your features are spread across
+> different locations, split them into separate requests — one per geographic
+> clump. Passing dispersed features is likely to produce zeroes, nulls, or
+> very small `count` values (the number of pixels sampled to compute the
+> stats).
+
+**Request**
+
+POST https://data.afm.cibolabs.com/getwoodycarbonstats?startyear=2015&endyear=2020&reportby=unique
+
+```bash
+geojson_file="your_area_of_interest.geojson"
+geojson=$(cat "$geojson_file")
+startyear="2015"
+endyear="2020"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$geojson" \
+    "https://data.afm.cibolabs.com/getwoodycarbonstats?startyear=$startyear&endyear=$endyear&reportby=unique"
+```
+
+**Body**
+
+Same FeatureCollection as Example 1.
+
+**Response**
+
+Notes:
+- Each feature receives its own independently computed statistics
+- `aggregate: "no"` indicates per-feature mode was used
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_a",
+        "aggregate": "no",
+        "stats": [
+{
+            "measure": "woodycarbon",
+            "unit": "tonnes/ha",
+            "area": 134.93551535704967,
+            "dates": [
+              "2015",
+              "2016",
+              "2017",
+              "2018",
+              "2019"
+            ],
+            "captured": [
+              100.0,
+              100.0,
+              100.0,
+              100.0,
+              100.0
+            ],
+            "mean": [
+              0.028950851571593873,
+              0.027039597226689634,
+              0.05444195856260963,
+              0.0992373010534114,
+              0.14862002427356383
+            ]
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_b",
+        "aggregate": "no",
+        "stats": [
+          {
+            "measure": "woodycarbon",
+            "unit": "tonnes/ha",
+            "area": 44.67924519129843,
+            "dates": [
+              "2015",
+              "2016",
+              "2017",
+              "2018",
+              "2019"
+            ],
+            "captured": [
+              100.0,
+              100.0,
+              100.0,
+              100.0,
+              100.0
+            ],
+            "mean": [
+              0.08894933519676392,
+              0.21055158863906093,
+              0.40817929741512,
+              0.12200850253436459,
+              0.16643998360055193
+            ]
           }
         ]
       },
