@@ -9,6 +9,7 @@ the list of endpoints.
 
 Date | Change | endpoints
 ---- | ------ | --------
+2026-07-31 | Add examples for rainfall endpoints to these docs | /getraindates, /getrain |
 2026-07-20 | Add /getseasons and /getseasonalfcstats for obtaining zonal statistics from the Seasonal Fractional Cover rasters | /getseasons, /getseasonalfcstats |
 2026-07-27 | Add /getwoodycarbonyears and /getwoodycarbonstats for obtaining zonal statistics from the Woody Carbon rasters | /getwoodycarbonyears, /getwoodycarbonstats |
 
@@ -1551,6 +1552,142 @@ Notes:
 }
 ```
 
+### Rainfall endpoints
+
+#### /getraindates
+
+**Request**
+
+GET https://data.afm.cibolabs.com/getraindates
+
+```bash
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: ******" \
+    "https://data.afm.cibolabs.com/getraindates"
+```
+
+**Response**
+
+```json
+{
+  "dates": ["202301", "202302", "202303", ...]
+}
+```
+
+#### /getrain
+
+> **Important:** When a request contains multiple features (for example, a
+> FeatureCollection), `/getrain` returns one rainfall series based on the
+> centroid of the combined extent of all features. This is usually fine when
+> extents are small. For large or dispersed extents, split into multiple
+> requests (for example, one request per feature or per nearby group).
+
+**Request**
+
+POST https://data.afm.cibolabs.com/getrain?startdate=20240101&enddate=20241231
+
+```bash
+geojson_file="your_area_of_interest.geojson"
+geojson=$(cat "$geojson_file")
+startdate="20240101"
+enddate="20241231"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: ******" \
+    -d "$geojson" \
+    "https://data.afm.cibolabs.com/getrain?startdate=$startdate&enddate=$enddate"
+```
+
+**Body**
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "feature_a"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "feature_b"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    }
+  ]
+}
+```
+
+**Response**
+
+Notes:
+- input feature properties are returned unchanged
+- geometry is returned unchanged
+- rain statistics are appended to each feature's `stats` list
+- with multiple features, all features receive the same aggregated rainfall series
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "feature_a",
+        "aggregate": "yes",
+        "stats": [
+          {
+            "measure": "rain",
+            "unit": "mm",
+            "area": 3832.76,
+            "dates": ["202401", "202402", "202403", ...],
+            "captured": [100.0, 100.0, 100.0, ...],
+            "mean": [122.6, 60.1, 9.7, ...]
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "feature_b",
+        "aggregate": "yes",
+        "stats": [
+          {
+            "measure": "rain",
+            "unit": "mm",
+            "area": 3832.76,
+            "dates": ["202401", "202402", "202403", ...],
+            "captured": [100.0, 100.0, 100.0, ...],
+            "mean": [122.6, 60.1, 9.7, ...]
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    }
+  ]
+}
+```
 
 ## Chaining
 
