@@ -68,7 +68,7 @@ When using these endpoints for a device, specify the device ID
 
 Date | Change | endpoints
 ---- | ------ | --------
-2026-07-31 | Bug fix. captured_median returns null instead of 0 kg/ha when captured percent is 0. | /gettsdmstats |
+2026-07-31 | Bug fix. captured_median now correctly returns null instead of 0 kg/ha when captured percent is 0. | /gettsdmstats |
 2026-03-30 | /snapshot endpoint returns captured_median for the tsdm endpoints, if available, even if the smoothed median value cannot be calculated | /snapshot |
 2026-03-23 | Added sub-paddock statistics workflow | /subpaddock, /subpaddockstatus
 2026-02-27 | Added /getterritory endpoint | /getterritory
