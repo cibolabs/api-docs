@@ -68,6 +68,7 @@ When using these endpoints for a device, specify the device ID
 
 Date | Change | endpoints
 ---- | ------ | --------
+2026-08-03 | Added `signal_strength` opt-in query parameter to `/gettsdmstats` and added `signal_strength` plus `nearest_signal_dates` to TSDM stats in `/snapshot`. | /gettsdmstats, /snapshot |
 2026-07-31 | Bug fix. captured_median now correctly returns null instead of 0 kg/ha when no pixels are captured by the satellite. | /gettsdmstats |
 2026-03-30 | /snapshot endpoint returns captured_median for the tsdm endpoints, if available, even if the smoothed median value cannot be calculated | /snapshot |
 2026-03-23 | Added sub-paddock statistics workflow | /subpaddock, /subpaddockstatus
@@ -428,7 +429,17 @@ curl -s -X GET \
             "trend": "Decreasing",
             "captured": [100],
             "captured_median": [1109],
-            "captured_foo": [361534]
+            "captured_foo": [361534],
+            "signal_strength": ["good"],
+            "nearest_signal_dates": [
+              {
+                "good": "20250206",
+                "low": "20250204",
+                "poor": null,
+                "window_start": "20250111",
+                "window_end": "20250312"
+              }
+            ]
           },
           {
             "measure": "tsdmgreen",
@@ -499,7 +510,17 @@ For example:
     "change_rate": [],
     "captured": [],
     "captured_median": [],
-    "captured_foo": []
+    "captured_foo": [],
+    "signal_strength": [],
+    "nearest_signal_dates": [
+      {
+        "good": null,
+        "low": null,
+        "poor": null,
+        "window_start": "20251201",
+        "window_end": "20260130"
+      }
+    ]
   },
   ...
 ]
@@ -518,6 +539,16 @@ If there is a satellite overpass, but we weren't able to make an estimate
     "foo": [null],
     "change_rate": [null],
     "captured": [0],
+    "signal_strength": ["poor"],
+    "nearest_signal_dates": [
+      {
+        "good": "20251224",
+        "low": "20251220",
+        "poor": "20251218",
+        "window_start": "20251128",
+        "window_end": "20260126"
+      }
+    ],
     "trend": null
   },
   ...
@@ -525,6 +556,14 @@ If there is a satellite overpass, but we weren't able to make an estimate
 ```
 
 Notes:
+- For the tsdm measure in `/snapshot`, `signal_strength` and
+  `nearest_signal_dates` are always returned. See
+  [Signal strength](#signal-strength) for definitions and
+  `nearest_signal_dates` rules.
+- `nearest_signal_dates` searches for nearest dates in a fixed window of
+  ±30 days around the requested date (not around the returned date).
+- `nearest_signal_dates` excludes the date already returned in `dates`.
+- If two dates are equally close, the later date is returned.
 - Legend is a colour table; it can be used to style returned geojson if
   you wish by linking it with the estimated_median_tsdm field
   (the legend attribute is a geojson foreign member:
@@ -552,17 +591,18 @@ See also:
 
 **Request**
 
-POST https://data.pasturekey.cibolabs.com/gettsdmstats/e354f641-fce2-4299-a7d4-561dc31597d2?startdate=20250501&enddate=20250525
+POST https://data.pasturekey.cibolabs.com/gettsdmstats/e354f641-fce2-4299-a7d4-561dc31597d2?startdate=20250501&enddate=20250525&signal_strength=yes
 
 ```bash
 farmid="e354f641-fce2-4299-a7d4-561dc31597d2"
 startdate="20250501"
 enddate="20250525"
+signal_strength="yes"
 curl -s -X POST \
     --output data.json \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${TOKEN}" \
-    "https://data.pasturekey.cibolabs.com/gettsdmstats/${farmid}?startdate=${startdate}&enddate=${enddate}"
+    "https://data.pasturekey.cibolabs.com/gettsdmstats/${farmid}?startdate=${startdate}&enddate=${enddate}&signal_strength=${signal_strength}"
 ```
 
 **Reponse**
@@ -586,7 +626,8 @@ curl -s -X POST \
           "change_rate": [-10, -12, ...],
           "captured": [100, 89, ...],
           "captured_median": [1301, 1143, ...],
-          "captured_foo": [424126, 412345, ...]
+          "captured_foo": [424126, 412345, ...],
+          "signal_strength": ["good", "good", ...]
         }
       ]
     },
@@ -600,6 +641,11 @@ curl -s -X POST \
 ```
 
 Notes:
+- Optional query parameter `signal_strength` controls whether
+  `signal_strength` is included in the TSDM stats object:
+  - `signal_strength=yes` includes the `signal_strength` list
+  - `signal_strength=no` (or omitted) omits the `signal_strength` key
+  - any other value returns HTTP 400 with an error message
 - dates are the dates of the satellite overpasses
 - captured is the percentage of the paddock captured in the satellite
   image; this is less than 100 when:
@@ -619,6 +665,8 @@ Notes:
   can be highly variable between dates
 - this is the only endpoint for which we provide an esimate of error and
   captured_median and captured_foo
+- When returned, `signal_strength` aligns index-for-index with `dates`.
+  See [Signal strength](#signal-strength).
 
 
 #### /gettsdmgreenstats
@@ -2153,6 +2201,43 @@ The maximum size of a request's body or the response is 6MB.
 This cannot be increased. You must restructure your requests if
 you hit this limit.
 
+## Signal strength
+
+Signal strength is defined for TSDM as follows:
+
+- `good`: there are sufficient clear satellite overpasses around the date to minimise
+   noise in the estimation by smoothing the single-date observations
+- `low`: the number of satellite overpasses in the smoothing window is sparse and
+  the captured percent is greater than 50 for the satellite overpass
+- `poor`: as for `low`, but the captured percent is less than 50
+
+Thus signal strength is about confidence in the Estimated median and fallback path,
+not just the raw observation quality. A date is `low` even when that date has high
+captured percent if the surrounding smoothing window is too sparse.
+
+### Good signal strength
+
+For TSDM, date-to-date variation in each satellite overpass can be high due to
+atmospheric, soil moisture, and cloud effects. A 'good' signal strength
+means:
+1. At least 5 satellite overpasses in the smoothing window capture at least
+   10% of the polygon's pixels.
+2. At least one observation within the last 5 days captures at least 10% of
+   the polygon's pixels.
+
+
+### Low and poor signal strengths
+
+'low' and 'poor' signal strengths indicate that too few observations
+are in the smoothing window. In that case, use the `captured_median` as
+a fallback when the signal strength is `low`. For signal strength `poor`,
+fallback is generally not recommended.
+
+The difference between the two is the captured percent of the paddock's pixels
+on the date of interest:
+- `low`: at least 50 percent captured
+- `poor`: less than 50 percent captured
+
 ## Median value calculations
 
 For a polygon, we provide a summary statistic that is the median
@@ -2163,27 +2248,14 @@ refers to the attribute name in the stats object of the API response.
 
 endpoint  | measure    | attribute | method
 ----------| -----------|-----------|--------
-/snapshot | TSDM       | median    | smoothed median from multiple capture dates
-/snapshot | TSDM       | captured_median<sup>*</sup> | median from single capture date
-/snapshot | TSDM green | median    | smoothed median from multiple capture dates
-/snapshot | TSDM dead  | median    | smoothed median from multiple capture dates
+/snapshot | TSDM       | median    | Estimated median (smoothed from multiple capture dates - `good` signal)
+/snapshot | TSDM       | captured_median | median from single capture date - `low` or `poor` signal
+/snapshot | TSDM green | median    | Estimated median (smoothed from multiple capture dates)
+/snapshot | TSDM dead  | median    | Estimated median (smoothed from multiple capture dates)
 /snapshot | FC         | median    | smoothed median from multiple capture dates
-/gettsdmstats | TSDM   | median    | smoothed median from multiple capture dates
-/gettsdmstats | TSDM   | captured_median<sup>*</sup> | median from single capture date
-/gettsdmgreenstats | TSDM green | median | smoothed median from multiple capture dates
-/gettsdmdeadstats  | TSDM dead  | median | smoothed median from multiple capture dates
+/gettsdmstats | TSDM   | median    | Estimated median (smoothed from multiple capture dates - `good` signal)
+/gettsdmstats | TSDM   | captured_median | median from single capture date - `low` or `poor` signal
+/gettsdmgreenstats | TSDM green | median | Estimated median (smoothed from multiple capture dates)
+/gettsdmdeadstats  | TSDM dead  | median | Estimated median (smoothed from multiple capture dates)
 /getfcstats | FC       | median    | smoothed median from multiple capture dates
 /subpaddock | all      | median    | median from the requested product - see the notes in the /subpaddock endpoint for details
-
-
-<sup>*</sup>For TSDM, the date-to-date variation in estimates can be high due
-to different atmospheric, soil moisture and cloud cover conditions.
-Thus, we recommend using the smoothed value. The smoothed value is
-calculated when two conditions are met.
-Firstly, at least 5 satellite overpasses in the smoothing
-window capture at least 10% of the polygon's pixels (e.g. are cloud free).
-And secondly, there is at least one observation within the last 5 days that
-captures at least 10% of the polygon's pixels.
-So, during cloudy periods a smoothed value may not be returned by the API.
-In this case, you may wish to fallback to the captured_median value
-if it is available and the percent captured is sufficiently high.
