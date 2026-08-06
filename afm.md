@@ -9,6 +9,8 @@ the list of endpoints.
 
 Date | Change | endpoints
 ---- | ------ | --------
+2026-08-06 | Renamed /getseasons to /getfcseasons | /getfcseasons |
+2026-08-06 | Add /getgcseasons and /getseasonalgcstats for obtaining zonal statistics from the Seasonal Ground Cover rasters | /getgcseasons, /getseasonalgcstats |
 2026-07-31 | Add examples for rainfall endpoints to these docs | /getraindates, /getrain |
 2026-07-20 | Add /getseasons and /getseasonalfcstats for obtaining zonal statistics from the Seasonal Fractional Cover rasters | /getseasons, /getseasonalfcstats |
 2026-07-27 | Add /getwoodycarbonyears and /getwoodycarbonstats for obtaining zonal statistics from the Woody Carbon rasters | /getwoodycarbonyears, /getwoodycarbonstats |
@@ -817,26 +819,49 @@ curl -s -X GET \
   ]
 }
 ```
-### Seasonal Fractional Cover endpoints
+### Seasonal Ground Cover and Seasonal Fractional Cover endpoints
 
-The Seasonal Fractional Cover endpoints calculate zonal statistics from seasonal estimates of 
-fractional cover obtained from the Landsat satellite record. There are 4 rasters per year, starting 1988. 
+The Seasonal Ground Cover and Seasonal Fractional Cover endpoints calculate
+zonal statistics from seasonal estimates of 
+ground cover and fractional cover obtained from the Landsat satellite record.
+There are 4 rasters per year for each product, starting 1988.
 
-The available seasons can be determined by calling the `/getseasons` endpoint.
+**What's the difference?**
 
-When using the  Seasonal Fractional Cover endpoints, a typical workflow is:
-- get list of seasons using `/getseasons`
-- request the zonal statistics within a Feature using `/getseasonalfcstats`
+Both measure the proportion of bare ground, green vegetation and dead
+vegetation in a pixel.
+
+The Ground Cover endpoint measures ground cover _under_ the tree canopy.
+
+The Fractional Cover endpoint measures the vertically-projected cover of the
+vegetation, including the tree canopy.
+
+For example, the proportion of dead ground cover for a location is typically
+higher than its dead fractional cover, especially during a dry period,
+because the contribution from the green tree canopy is removed.
+
+The Seasonal Ground Cover product is preferred for most applications.
+
+> **Important:** The Seasonal Fractional Cover endpoint is a Beta release.
+> It may be removed in the future.
+> There are known issues. Data gaps in some seasons in some locations.
+> Data for the most recent seasons may not be available.
+
+When using the  Seasonal Cover endpoints, a typical workflow is:
+- get list of seasons using `/getgcseasons` or `/getfcseasons`
+- request the zonal statistics within a Feature using
+  `/getseasonalgcstats` or `/getseasonalfcstats`
+
   
-#### /getseasons
+#### /getgcseasons and /getfcseasons
 
-Returns a list of seasons that can then be passed in a request to `/getseasonalfcstats` (below).
+Returns a list of seasons. Pass the response in a request to `/getseasonalfcstats` (below).
 These seasons are in the format `YYYYMM` and define the end year and month of the 3 month season.
 For example, 199402 is for the three months December 1993 to February 1994 (southern hemisphere summer).
 
 ** Request **
 
-GET https://data.afm.cibolabs.com/getseasons
+GET https://data.afm.cibolabs.com/getfcseasons
 
 ```bash
 curl -s -X GET \
@@ -862,10 +887,10 @@ curl -s -X GET \
 }
 ```
 
-#### /getseasonalfcstats
+#### /getseasonalgcstats and /getseasonalfcstats
 
-Returns zonal statistics for seasonal fractional cover for a given
-area of interest, for each season between `startdate` and `enddate`. 
+Returns zonal statistics for seasonal ground cover and seasonal fractional cover
+for a given area of interest, for each season between `startdate` and `enddate`. 
 
 **Parameters**
 
