@@ -68,6 +68,7 @@ When using these endpoints for a device, specify the device ID
 
 Date | Change | endpoints
 ---- | ------ | --------
+2026-08-07 | Added `cluster` query parameter | `/snapshot`, `/geom`, `/getpaddockinfo` 
 2026-08-03 | Added `signal_strength` opt-in query parameter to `/gettsdmstats` and added `signal_strength` plus `nearest_signal_dates` to TSDM stats in `/snapshot`. | /gettsdmstats, /snapshot |
 2026-07-31 | Bug fix. captured_median now correctly returns null instead of 0 kg/ha when no pixels are captured by the satellite. | /gettsdmstats |
 2026-03-30 | /snapshot endpoint returns captured_median for the tsdm endpoints, if available, even if the smoothed median value cannot be calculated | /snapshot |
@@ -313,6 +314,9 @@ curl -s -X GET \
     "https://data.pasturekey.cibolabs.com/getpaddockinfo/${farmid}"
 ```
 
+Supports the optional `cluster` query parameter.
+See [paddock clusters](#paddock-clusters).
+
 **Response**
 
 ```json
@@ -352,6 +356,9 @@ curl -s -X POST \
     -H "Authorization: Bearer ${TOKEN}" \
     "https://data.pasturekey.cibolabs.com/geom/${farmid}"
 ```
+
+Supports the optional `cluster` query parameter.
+See [paddock clusters](#paddock-clusters).
 
 **Response**
 
@@ -402,6 +409,9 @@ curl -s -X GET \
     -H "Authorization: Bearer ${TOKEN}" \
     "https://data.pasturekey.cibolabs.com/snapshot/${imagedate}/${farmid}"
 ```
+
+Supports the optional `cluster` query parameter.
+See [paddock clusters](#paddock-clusters).
 
 **Response**
 
@@ -495,7 +505,7 @@ curl -s -X GET \
 ```
 
 If no satellite overpass is found for the specified date or within
-10 days prior, the stats object contains empty lists.
+10 days, the stats object contains empty lists.
 For example:
 
 ```json
@@ -2259,3 +2269,20 @@ endpoint  | measure    | attribute | method
 /gettsdmdeadstats  | TSDM dead  | median | Estimated median (smoothed from multiple capture dates)
 /getfcstats | FC       | median    | smoothed median from multiple capture dates
 /subpaddock | all      | median    | median from the requested product - see the notes in the /subpaddock endpoint for details
+
+## Paddock clusters
+
+Some customers manage their Aggregation (many properties as part of a single
+business unit) as a single property in the CiboLabs platform.
+
+> Note: creating aggregations in the PastureKey platform is strongly discouraged.
+> Please [Contact Support](mailto:support@cibolabs.com.au) to discuss alternate
+> subscription options.
+
+This creates clusters across a large geographic area.
+The `/geom`, `/getpaddockinfo`, and `/snapshot` endpoints support the optional
+`cluster` query parameter to identify clusters.
+A paddock belongs to a cluster if it is within the given distance (in metres)
+of at least one other paddock in the cluster. Each paddock in the response
+is assigned a `cluster_id`.
+See [the reference docs](https://data.pasturekey.cibolabs.com/swagger).
