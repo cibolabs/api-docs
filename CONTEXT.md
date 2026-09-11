@@ -44,6 +44,14 @@ _Avoid_: Total feed, available feed
 The percentage of a Paddock's surface covered by green vegetation, dead vegetation, and bare ground — three components that sum to 100%.
 _Avoid_: Ground cover, vegetation cover
 
+**Histogram**:
+An optional array of pixel frequency counts across fixed value bins for a measure within a Query Geometry. When enabled, returned alongside Zonal Statistics for each date or season.
+_Avoid_: Frequency distribution (informal), bin counts (too generic)
+
+**Bin Edges**:
+The fixed boundary values defining the bins of a Histogram (e.g. 101 edges `[0, 1, ..., 100]` for FC, seasonal FC, and seasonal GC). When histograms are enabled, returned alongside `histogram` counts to make distributions self-describing.
+_Avoid_: Bins (ambiguous between counts and edges), bin boundaries
+
 **NBAR (Nadir-view BRDF-Adjusted Reflectance)**:
 The surface reflectance product derived from satellite imagery, corrected for viewing angle and atmospheric effects. The underlying data from which TSDM and FC are derived.
 _Avoid_: Reflectance, satellite image, raw imagery
