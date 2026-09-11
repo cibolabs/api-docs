@@ -9,7 +9,8 @@ the list of endpoints.
 
 Date | Change | endpoints
 ---- | ------ | --------
-2026-09-11 | Add histogram parameter example to /getfcstats | /getfcstats |
+2026-09-11 | Add histogram query parameter | /getfcstats, /getpointfcstats |
+2026-09-11 | Add bin_edges property to response when using thehistogram query parameter | /getfcstats, /getpointfcstats, /getseasonalgcstats, /getseasonalfcstats |
 2026-08-06 | Renamed /getseasons to /getfcseasons | /getfcseasons |
 2026-08-06 | Add /getgcseasons and /getseasonalgcstats for obtaining zonal statistics from the Seasonal Ground Cover rasters | /getgcseasons, /getseasonalgcstats |
 2026-07-31 | Add examples for rainfall endpoints to these docs | /getraindates, /getrain |
@@ -482,8 +483,9 @@ Notes:
   stats from the first feature
 - `aggregate: "yes"` indicates the aggregated mode was used
 - Three statistics objects are returned per feature: `fcbare`, `fcgreen`, and `fcdead`
-- `bin_edges` contains 101 fixed values from `0` to `100` representing integer percentage boundaries
-- `histogram` contains an array of 101 pixel count values for each date in `dates`
+- `histogram` contains an array of pixel count values for each date in `dates`
+- `bin_edges` contains the bin edges for the histogram; its length is one more
+  than the length of the histograms arrays
 
 ```json
 {
@@ -1133,8 +1135,9 @@ for a given area of interest, for each season between `startdate` and `enddate`.
   feature in the FeatureCollection independently, instead of aggregating all
   features together. When specified, the output has `aggregate: "no"`,
   otherwise it is `"yes"`.
-- `histogram` — optional. Set to `yes` to return the histogram of the FC
-  measures with each stats object. 
+- `histogram` (when query param `histogram=yes`) contains an array of pixel count values for each date in `dates`
+- `bin_edges` (when query param `histogram=yes`) contains the bin edges for the histogram; its length is one more
+  than the length of the histograms arrays
 
 **Example 1: default aggregate mode (FeatureCollection)**
 
