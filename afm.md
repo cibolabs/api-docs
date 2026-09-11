@@ -9,6 +9,8 @@ the list of endpoints.
 
 Date | Change | endpoints
 ---- | ------ | --------
+2026-09-11 | Add histogram query parameter | /getfcstats, /getpointfcstats |
+2026-09-11 | Add bin_edges property to response when using thehistogram query parameter | /getfcstats, /getpointfcstats, /getseasonalgcstats, /getseasonalfcstats |
 2026-08-06 | Renamed /getseasons to /getfcseasons | /getfcseasons |
 2026-08-06 | Add /getgcseasons and /getseasonalgcstats for obtaining zonal statistics from the Seasonal Ground Cover rasters | /getgcseasons, /getseasonalgcstats |
 2026-07-31 | Add examples for rainfall endpoints to these docs | /getraindates, /getrain |
@@ -415,10 +417,241 @@ See the /gettsdmstats examples above.
 
 #### /getfcstats
 
-See the /gettsdmstats examples above.
+Returns zonal statistics for fractional cover (FC) for a given area of interest,
+broken into three fractions — bare (`fcbare`), green (`fcgreen`), and dead (`fcdead`) — for
+each observation date between `startdate` and `enddate`.
 
-The response contains three statistics objects per Feature. One each for
-fcbare, fcgreen and fcdead.
+**Parameters**
+
+- `startdate` — start date (YYYYMMDD). Defaults to 10 years before `enddate` if omitted.
+- `enddate` — end date (YYYYMMDD). Defaults to current date if omitted.
+- `percentiles` — optional comma-separated percentiles to calculate (e.g. `10,25,50,75,90` or `5,95`).
+- `reportby` — optional. Set to `unique` to calculate statistics for each feature in the FeatureCollection independently, instead of aggregating all features together.
+- `histogram` — optional. Set to `yes` to return histogram frequency counts alongside the statistics for each measure.
+
+**Example: default aggregate mode with `histogram=yes` (FeatureCollection)**
+
+**Request**
+
+POST https://data.afm.cibolabs.com/getfcstats?startdate=20241101&enddate=20241231&percentiles=10,25,50,75,90&histogram=yes
+
+```bash
+geojson_file="your_area_of_interest.geojson"
+geojson=$(cat "$geojson_file")
+startdate="20241101"
+enddate="20241231"
+percentiles="10,25,50,75,90"
+curl -s -X POST \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: ******" \
+    -d "$geojson" \
+    "https://data.afm.cibolabs.com/getfcstats?startdate=$startdate&enddate=$enddate&percentiles=$percentiles&histogram=yes"
+```
+
+**Body**
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "paddock_a" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "paddock_b" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    }
+  ]
+}
+```
+
+**Response**
+
+Notes:
+- The stats returned in each feature are identical and represent the
+  aggregate stats across all input features — you only need to read the
+  stats from the first feature
+- `aggregate: "yes"` indicates the aggregated mode was used
+- Three statistics objects are returned per feature: `fcbare`, `fcgreen`, and `fcdead`
+- `histogram` contains an array of pixel count values for each date in `dates`
+- `bin_edges` contains the bin edges for the histogram; its length is one more
+  than the length of the histograms arrays
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_a",
+        "aggregate": "yes",
+        "stats": [
+          {
+            "measure": "fcbare",
+            "bin_edges": [0, 1, 2, ..., 100],
+            "area": 311.30,
+            "unit": "%",
+            "dates": ["20241104", "20241109", ...],
+            "captured": [94.94, 99.60, ...],
+            "count": [469, 492, ...],
+            "mean": [23.15, 26.01, ...],
+            "std": [7.42, 6.66, ...],
+            "median": [25.0, 26.0, ...],
+            "p10": [9.0, 13.0, ...],
+            "p25": [15.0, 19.0, ...],
+            "p50": [25.0, 26.0, ...],
+            "p75": [30.0, 31.0, ...],
+            "p90": [35.0, 36.0, ...],
+            "histogram": [
+              [0, 0, 3, 9, 8, ..., 0],
+              [0, 0, 1, 5, 12, ..., 0],
+              ...
+            ]
+          },
+          {
+            "measure": "fcgreen",
+            "bin_edges": [0, 1, 2, ..., 100],
+            "area": 311.30,
+            "unit": "%",
+            "dates": ["20241104", "20241109", ...],
+            "captured": [94.94, 99.60, ...],
+            "count": [469, 492, ...],
+            "mean": [34.82, 32.14, ...],
+            "std": [11.20, 10.45, ...],
+            "median": [35.0, 32.0, ...],
+            "p10": [18.0, 17.0, ...],
+            "p25": [26.0, 24.0, ...],
+            "p50": [35.0, 32.0, ...],
+            "p75": [43.0, 40.0, ...],
+            "p90": [50.0, 47.0, ...],
+            "histogram": [
+              [0, 1, 4, 11, ..., 0],
+              [0, 0, 6, 14, ..., 0],
+              ...
+            ]
+          },
+          {
+            "measure": "fcdead",
+            "bin_edges": [0, 1, 2, ..., 100],
+            "area": 311.30,
+            "unit": "%",
+            "dates": ["20241104", "20241109", ...],
+            "captured": [94.94, 99.60, ...],
+            "count": [469, 492, ...],
+            "mean": [42.03, 41.85, ...],
+            "std": [8.15, 7.90, ...],
+            "median": [42.0, 42.0, ...],
+            "p10": [32.0, 31.0, ...],
+            "p25": [37.0, 36.0, ...],
+            "p50": [42.0, 42.0, ...],
+            "p75": [47.0, 47.0, ...],
+            "p90": [52.0, 52.0, ...],
+            "histogram": [
+              [0, 0, 0, 2, 8, ..., 0],
+              [0, 0, 1, 4, 9, ..., 0],
+              ...
+            ]
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "paddock_b",
+        "aggregate": "yes",
+        "stats": [
+          {
+            "measure": "fcbare",
+            "bin_edges": [0, 1, 2, ..., 100],
+            "area": 311.30,
+            "unit": "%",
+            "dates": ["20241104", "20241109", ...],
+            "captured": [94.94, 99.60, ...],
+            "count": [469, 492, ...],
+            "mean": [23.15, 26.01, ...],
+            "std": [7.42, 6.66, ...],
+            "median": [25.0, 26.0, ...],
+            "p10": [9.0, 13.0, ...],
+            "p25": [15.0, 19.0, ...],
+            "p50": [25.0, 26.0, ...],
+            "p75": [30.0, 31.0, ...],
+            "p90": [35.0, 36.0, ...],
+            "histogram": [
+              [0, 0, 3, 9, 8, ..., 0],
+              [0, 0, 1, 5, 12, ..., 0],
+              ...
+            ]
+          },
+          {
+            "measure": "fcgreen",
+            "bin_edges": [0, 1, 2, ..., 100],
+            "area": 311.30,
+            "unit": "%",
+            "dates": ["20241104", "20241109", ...],
+            "captured": [94.94, 99.60, ...],
+            "count": [469, 492, ...],
+            "mean": [34.82, 32.14, ...],
+            "std": [11.20, 10.45, ...],
+            "median": [35.0, 32.0, ...],
+            "p10": [18.0, 17.0, ...],
+            "p25": [26.0, 24.0, ...],
+            "p50": [35.0, 32.0, ...],
+            "p75": [43.0, 40.0, ...],
+            "p90": [50.0, 47.0, ...],
+            "histogram": [
+              [0, 1, 4, 11, ..., 0],
+              [0, 0, 6, 14, ..., 0],
+              ...
+            ]
+          },
+          {
+            "measure": "fcdead",
+            "bin_edges": [0, 1, 2, ..., 100],
+            "area": 311.30,
+            "unit": "%",
+            "dates": ["20241104", "20241109", ...],
+            "captured": [94.94, 99.60, ...],
+            "count": [469, 492, ...],
+            "mean": [42.03, 41.85, ...],
+            "std": [8.15, 7.90, ...],
+            "median": [42.0, 42.0, ...],
+            "p10": [32.0, 31.0, ...],
+            "p25": [37.0, 36.0, ...],
+            "p50": [42.0, 42.0, ...],
+            "p75": [47.0, 47.0, ...],
+            "p90": [52.0, 52.0, ...],
+            "histogram": [
+              [0, 0, 0, 2, 8, ..., 0],
+              [0, 0, 1, 4, 9, ..., 0],
+              ...
+            ]
+          }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [ ... ]
+      }
+    }
+  ]
+}
+```
 
 #### Thumbnail Endpoints
 
@@ -902,8 +1135,9 @@ for a given area of interest, for each season between `startdate` and `enddate`.
   feature in the FeatureCollection independently, instead of aggregating all
   features together. When specified, the output has `aggregate: "no"`,
   otherwise it is `"yes"`.
-- `histogram` — optional. Set to `yes` to return the histogram of the FC
-  measures with each stats object. 
+- `histogram` (when query param `histogram=yes`) contains an array of pixel count values for each date in `dates`
+- `bin_edges` (when query param `histogram=yes`) contains the bin edges for the histogram; its length is one more
+  than the length of the histograms arrays
 
 **Example 1: default aggregate mode (FeatureCollection)**
 
