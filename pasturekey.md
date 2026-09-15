@@ -68,6 +68,7 @@ When using these endpoints for a device, specify the device ID
 
 Date | Change | endpoints
 ---- | ------ | --------
+2026-09-15 | Added `signal_strength` opt-in query parameter to `/getimagedates` returning property captured percent and signal strength breakdown | `/getimagedates`
 2026-08-07 | Added `cluster` query parameter | `/snapshot`, `/geom`, `/getpaddockinfo` 
 2026-08-03 | Added `signal_strength` opt-in query parameter to `/gettsdmstats` and added `signal_strength` plus `nearest_signal_dates` to TSDM stats in `/snapshot`. | /gettsdmstats, /snapshot |
 2026-07-31 | Bug fix. captured_median now correctly returns null instead of 0 kg/ha when no pixels are captured by the satellite. | /gettsdmstats |
@@ -266,9 +267,10 @@ curl -s -X GET \
 
 Get a list of dates for the satellite overpasses.
 
-**Request**
+Supports the optional `signal_strength` query parameter (`yes` or `no`, default `no`).
+When `signal_strength=yes`, the response also includes property-level `captured` percent and `signal_strength` category breakdowns.
 
-GET https://data.pasturekey.cibolabs.com/getimagedates/e354f641-fce2-4299-a7d4-561dc31597d2
+**Request (default)**
 
 ```bash
 farmid="e354f641-fce2-4299-a7d4-561dc31597d2"
@@ -280,7 +282,7 @@ curl -s -X GET \
     "https://data.pasturekey.cibolabs.com/getimagedates/${farmid}"
 ```
 
-**Response**
+**Response (default)**
 
 ```json
 {
@@ -295,6 +297,68 @@ curl -s -X GET \
   ]
 }
 ```
+
+**Request with signal_strength**
+
+GET https://data.pasturekey.cibolabs.com/getimagedates/e354f641-fce2-4299-a7d4-561dc31597d2?signal_strength=yes
+
+```bash
+farmid="e354f641-fce2-4299-a7d4-561dc31597d2"
+signal_strength="yes"
+
+curl -s -X GET \
+    --output data.json \
+    -H "Content-Type: application/json" \
+    -H "Authorization: ******" \
+    "https://data.pasturekey.cibolabs.com/getimagedates/${farmid}?signal_strength=${signal_strength}"
+```
+
+**Response with signal_strength**
+
+```json
+{
+  "dates": [
+    "20250915",
+    "20250918",
+    "20250920"
+  ],
+  "captured": [
+    95.4,
+    82.1,
+    100.0
+  ],
+  "signal_strength": [
+    {
+      "good": 80.0,
+      "low": 15.0,
+      "poor": 5.0,
+      "none": 0.0
+    },
+    {
+      "good": 50.0,
+      "low": 30.0,
+      "poor": 10.0,
+      "none": 10.0
+    },
+    {
+      "good": 100.0,
+      "low": 0.0,
+      "poor": 0.0,
+      "none": 0.0
+    }
+  ]
+}
+```
+
+Notes:
+- `dates`: list of image dates in `YYYYMMDD` format.
+- `captured`: list of property captured percentages
+  (percent of farm captured by the satellite and cloud-free) corresponding to
+  each date.
+- `signal_strength`: list of objects corresponding to each date in `dates`,
+   breaking down the percentage of paddocks in each signal strength
+   category (`good`, `low`, `poor`, and `none`).
+   See [Signal strength](#signal-strength) for category definitions.
 
 #### /getpaddockinfo
 
@@ -2247,6 +2311,24 @@ The difference between the two is the captured percent of the paddock's pixels
 on the date of interest:
 - `low`: at least 50 percent captured
 - `poor`: less than 50 percent captured
+
+### Property signal strength breakdown
+
+When requested via `/getimagedates?signal_strength=yes`, the API provides a
+property-level summary for each image date:
+- `captured`: The percentage of the property observed by the satellite and
+  cloud free on that date
+- `signal_strength`: The percentage breakdown of paddocks on the property across
+  four categories:
+  - `good`: paddocks with [good signal strength](#good-signal-strength)
+  - `low`: paddocks with [low signal strength](#low-and-poor-signal-strengths)
+  - `poor`: paddocks with [poor signal strength](#low-and-poor-signal-strengths)
+  - `none`: paddocks with no observation on that date (0% captured / unobserved)
+
+See also:
+- /getimagedates
+- /gettsdmstats
+- /snapshot
 
 ## Median value calculations
 

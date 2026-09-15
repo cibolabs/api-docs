@@ -24,6 +24,14 @@ _Avoid_: Feedbase monitor
 The date of a satellite overpass for which processed data is available for a Property.
 _Avoid_: Date, overpass date, capture date
 
+**Property Captured Percent**:
+The area-weighted percentage of a Property's total area validly observed by the satellite on an Image Date, computed as 100 × area_captured / total_area.
+_Avoid_: Property coverage, valid percent
+
+**Property Signal Strength Breakdown**:
+The percentage of a Property's active Paddocks falling into each Signal Strength category (`good`, `low`, `poor`, `none`) on an Image Date.
+_Avoid_: Farm signal strength (too ambiguous as a single value)
+
 **Snapshot**:
 The state of a Property's Paddocks at a given Image Date, expressed as a GeoJSON FeatureCollection with per-Paddock statistics.
 _Avoid_: Report, export, dump
