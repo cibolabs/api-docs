@@ -91,7 +91,7 @@ curl -X GET \
     --output "tsdm_20250826_13_7511_4848.png" \
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Accept: image/png" \
-    "https://tiles.pasturekey.cibolabs.com/tsdm/20250826/${PROPERTY_ID}$/13/7511/4848"
+    "https://tiles.pasturekey.cibolabs.com/tsdm/20250826/${PROPERTY_ID}/13/7511/4848"
 ```
 
 ### /fractionalcover
